@@ -67,3 +67,10 @@ React-admin + Firebase admin panel for managing tournaments, users, rewards, and
 - relatedWithdrawId
 - createdAt
 - meta (extra details)
+## Setup steps (PC par)
+
+1. npx create-react-app dhrivowin-admin
+2. cd dhrivowin-admin
+3. npm install react-admin react-admin-firebase firebase
+4. Firebase console se web app bana kar firebaseConfig.js me config paste karo.
+5. App.js me React-admin + FirebaseDataProvider ka code add karo.
