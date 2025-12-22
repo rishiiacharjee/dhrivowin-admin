@@ -73,7 +73,7 @@ const Navbar = () => {
               
               <Link to="/profile" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
                 <User className="w-5 h-5" />
-                <span className="hidden sm:block text-sm">{user?.name}</span>
+                <span className="hidden sm:block text-sm">{user?.username}</span>
               </Link>
 
               <button

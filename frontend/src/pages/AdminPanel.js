@@ -184,7 +184,7 @@ const AdminPanel = () => {
                     <div key={w.id} className="flex items-center justify-between bg-zinc-800/50 p-3">
                       <div>
                         <p className="font-semibold">{w.amount} DR</p>
-                        <p className="text-xs text-zinc-500">{w.upi_id || `${w.bank_account} (${w.ifsc_code})`}</p>
+                        <p className="text-xs text-zinc-500">{w.account_holder_name} • {w.upi_id || `${w.bank_account} (${w.ifsc_code})`}</p>
                       </div>
                       <div className="flex gap-2">
                         <Button size="sm" onClick={() => handleWithdrawal(w.id, 'approve')} className="bg-green-500 hover:bg-green-400"><CheckCircle className="w-4 h-4" /></Button>

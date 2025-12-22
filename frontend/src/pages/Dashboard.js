@@ -67,7 +67,7 @@ const Dashboard = () => {
           className="mb-6"
         >
           <h1 className="text-2xl sm:text-3xl font-bold font-['Chakra_Petch']">
-            Welcome, <span className="text-yellow-400">{user?.name}</span>!
+            Welcome, <span className="text-yellow-400">{user?.username}</span>!
           </h1>
           <p className="text-zinc-400 mt-1">Ready to compete and win?</p>
         </motion.div>
