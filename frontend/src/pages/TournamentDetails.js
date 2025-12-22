@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import { 
   Trophy, Users, Calendar, Clock, Gamepad2, 
-  ChevronLeft, Coins, AlertCircle, Check, Copy, Loader2
+  ChevronLeft, Coins, AlertCircle, Check, Copy, Loader2, Crosshair
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
