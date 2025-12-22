@@ -571,7 +571,7 @@ async def create_lucky_draw(data: LuckyDrawCreate, admin=Depends(get_admin_user)
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.lucky_draws.insert_one(draw)
-    return draw
+    return {k: v for k, v in draw.items() if k != "_id"}
 
 @api_router.post("/lucky-draws/{draw_id}/enter")
 async def enter_lucky_draw(draw_id: str, user=Depends(get_current_user)):
