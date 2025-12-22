@@ -207,30 +207,20 @@ const WalletPage = () => {
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-3">
                     {rechargeOptions.map((amt) => (
                       <button
                         key={amt}
                         onClick={() => setRechargeAmount(amt.toString())}
-                        className={`p-3 border text-center font-bold transition-colors
+                        className={`p-4 border text-center font-bold transition-all transform hover:scale-105
                           ${rechargeAmount === amt.toString() 
-                            ? 'bg-yellow-400 border-yellow-400 text-black' 
+                            ? 'bg-yellow-400 border-yellow-400 text-black scale-105' 
                             : 'bg-zinc-800/50 border-white/10 hover:border-yellow-400/50'}`}
                       >
-                        {amt} DR
+                        <span className="text-xl">{amt}</span>
+                        <span className="block text-xs opacity-70">DR</span>
                       </button>
                     ))}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Custom Amount</Label>
-                    <Input
-                      type="number"
-                      placeholder="Enter amount"
-                      value={rechargeAmount}
-                      onChange={(e) => setRechargeAmount(e.target.value)}
-                      className="bg-zinc-800/50 border-white/10"
-                      data-testid="recharge-amount-input"
-                    />
                   </div>
                   <div className="bg-zinc-800/50 p-3 text-sm">
                     <p className="text-zinc-400">Amount to Pay: ₹{rechargeAmount || 0}</p>
