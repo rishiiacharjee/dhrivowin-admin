@@ -221,7 +221,7 @@ async def register(data: UserRegister):
         "id": user_id,
         "mobile": data.mobile,
         "password": hash_password(data.password),
-        "name": data.name,
+        "username": data.username,
         "wallet_balance": bonus,
         "referral_code": referral_code,
         "backup_code": backup_code,
@@ -231,6 +231,7 @@ async def register(data: UserRegister):
         "upi_id": None,
         "bank_account": None,
         "ifsc_code": None,
+        "account_holder_name": None,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -358,6 +359,7 @@ async def withdraw_request(data: WalletWithdraw, user=Depends(get_current_user))
         "upi_id": data.upi_id,
         "bank_account": data.bank_account,
         "ifsc_code": data.ifsc_code,
+        "account_holder_name": data.account_holder_name,
         "status": "PENDING",
         "type": "WITHDRAWAL",
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -792,11 +794,11 @@ async def startup_event():
     # Create default admin if not exists
     admin = await db.users.find_one({"mobile": "9999999999"})
     if not admin:
-        admin_user = {
+    admin_user = {
             "id": str(uuid.uuid4()),
             "mobile": "9999999999",
             "password": hash_password("admin123"),
-            "name": "Admin",
+            "username": "Admin",
             "wallet_balance": 10000,
             "referral_code": "ADMIN001",
             "backup_code": "ADMINBACK01",
@@ -806,6 +808,7 @@ async def startup_event():
             "upi_id": None,
             "bank_account": None,
             "ifsc_code": None,
+            "account_holder_name": None,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(admin_user)
