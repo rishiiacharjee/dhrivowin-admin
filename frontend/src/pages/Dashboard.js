@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import NewsTicker from '../components/NewsTicker';
+import NewsBanner from '../components/NewsBanner';
+import ShoppingBanner from '../components/ShoppingBanner';
 import TournamentCard from '../components/TournamentCard';
+import InstallPWA from '../components/InstallPWA';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
 import { 
   Trophy, ChevronRight, Wallet, Gift, Ticket, 
-  Award, Gamepad2, Clock, TrendingUp
+  Award, Gamepad2, Clock, TrendingUp, Download
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { motion } from 'framer-motion';
@@ -55,13 +57,9 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-[#09090B] pb-20 md:pb-8">
       <Navbar />
-      
-      {/* News Ticker */}
-      <div className="pt-16">
-        <NewsTicker />
-      </div>
+      <InstallPWA />
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl mx-auto px-4 py-6 pt-20">
         {/* Welcome Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -144,6 +142,12 @@ const Dashboard = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* News Banner - Big Style */}
+        <NewsBanner />
+
+        {/* Shopping Banner */}
+        <ShoppingBanner />
 
         {/* Quick Actions */}
         <div className="mb-8">
