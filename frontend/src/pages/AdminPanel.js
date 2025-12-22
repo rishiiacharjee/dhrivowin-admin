@@ -135,6 +135,11 @@ const AdminPanel = () => {
                         <Input type="number" placeholder="Prize Pool" value={tournamentForm.prize_pool} onChange={(e) => setTournamentForm({...tournamentForm, prize_pool: parseInt(e.target.value)})} className="bg-zinc-800/50 border-white/10" />
                         <Input type="number" placeholder="Max Players" value={tournamentForm.max_participants} onChange={(e) => setTournamentForm({...tournamentForm, max_participants: parseInt(e.target.value)})} className="bg-zinc-800/50 border-white/10" />
                       </div>
+                      <div className="bg-red-500/10 border border-red-500/30 p-3">
+                        <Label className="text-red-400 font-bold text-sm mb-2 block">💀 PER KILL REWARD (DR)</Label>
+                        <Input type="number" placeholder="Per Kill Money (0 = disabled)" value={tournamentForm.per_kill_reward} onChange={(e) => setTournamentForm({...tournamentForm, per_kill_reward: parseInt(e.target.value) || 0})} className="bg-zinc-800/50 border-red-500/30" />
+                        <p className="text-xs text-zinc-500 mt-1">Set 0 to disable per kill rewards</p>
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <Input type="date" value={tournamentForm.match_date} onChange={(e) => setTournamentForm({...tournamentForm, match_date: e.target.value})} className="bg-zinc-800/50 border-white/10" />
                         <Input type="time" value={tournamentForm.match_time} onChange={(e) => setTournamentForm({...tournamentForm, match_time: e.target.value})} className="bg-zinc-800/50 border-white/10" />
