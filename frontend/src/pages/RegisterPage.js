@@ -9,7 +9,7 @@ import { Phone, Lock, Eye, EyeOff, User, Gift, Loader2, Copy, Check } from 'luci
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
     mobile: '',
     password: '',
     confirmPassword: '',
@@ -29,7 +29,7 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.mobile || !formData.password) {
+    if (!formData.username || !formData.mobile || !formData.password) {
       toast.error('Please fill all required fields');
       return;
     }
@@ -47,7 +47,7 @@ const RegisterPage = () => {
     setLoading(true);
     try {
       const userData = await register({
-        name: formData.name,
+        username: formData.username,
         mobile: formData.mobile,
         password: formData.password,
         referral_code: formData.referral_code || undefined
@@ -144,15 +144,15 @@ const RegisterPage = () => {
         <div className="bg-zinc-900/50 border border-white/10 p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
+              <Label htmlFor="username">Username *</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                 <Input
-                  id="name"
-                  name="name"
+                  id="username"
+                  name="username"
                   type="text"
-                  placeholder="Enter your name"
-                  value={formData.name}
+                  placeholder="Enter username"
+                  value={formData.username}
                   onChange={handleChange}
                   className="pl-10 bg-zinc-800/50 border-white/10 focus:border-yellow-400"
                   data-testid="register-name-input"
