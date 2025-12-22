@@ -44,7 +44,7 @@ class UserRegister(BaseModel):
     mobile: str
     password: str
     referral_code: Optional[str] = None
-    name: str
+    username: str
 
 class UserLogin(BaseModel):
     mobile: str
@@ -53,7 +53,7 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: str
     mobile: str
-    name: str
+    username: str
     wallet_balance: float = 0
     referral_code: str
     backup_code: str
@@ -63,6 +63,7 @@ class UserResponse(BaseModel):
     upi_id: Optional[str] = None
     bank_account: Optional[str] = None
     ifsc_code: Optional[str] = None
+    account_holder_name: Optional[str] = None
     created_at: str
 
 class TokenResponse(BaseModel):
@@ -77,6 +78,7 @@ class WalletWithdraw(BaseModel):
     upi_id: Optional[str] = None
     bank_account: Optional[str] = None
     ifsc_code: Optional[str] = None
+    account_holder_name: str  # Required - UPI/Bank account holder name
 
 class TournamentCreate(BaseModel):
     title: str
@@ -143,12 +145,13 @@ class ResultCreate(BaseModel):
     winners: List[dict]  # [{rank: 1, user_id: "...", prize: 100, kills: 5}]
 
 class ProfileUpdate(BaseModel):
-    name: Optional[str] = None
+    username: Optional[str] = None
     game_uid: Optional[str] = None
     game_name: Optional[str] = None
     upi_id: Optional[str] = None
     bank_account: Optional[str] = None
     ifsc_code: Optional[str] = None
+    account_holder_name: Optional[str] = None
 
 class PasswordReset(BaseModel):
     mobile: str
