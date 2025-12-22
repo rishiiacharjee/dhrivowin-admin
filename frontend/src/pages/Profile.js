@@ -16,12 +16,13 @@ const Profile = () => {
   const { user, refreshUser, logout } = useAuth();
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || '',
+    username: user?.username || '',
     game_uid: user?.game_uid || '',
     game_name: user?.game_name || '',
     upi_id: user?.upi_id || '',
     bank_account: user?.bank_account || '',
-    ifsc_code: user?.ifsc_code || ''
+    ifsc_code: user?.ifsc_code || '',
+    account_holder_name: user?.account_holder_name || ''
   });
   const [copied, setCopied] = useState({ referral: false, backup: false });
   const [saving, setSaving] = useState(false);
@@ -70,11 +71,11 @@ const Profile = () => {
           <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
             <div className="w-20 h-20 bg-yellow-400 flex items-center justify-center">
               <span className="text-3xl font-bold text-black font-['Chakra_Petch']">
-                {user?.name?.charAt(0)?.toUpperCase()}
+                {user?.username?.charAt(0)?.toUpperCase()}
               </span>
             </div>
             <div>
-              <h2 className="text-xl font-bold">{user?.name}</h2>
+              <h2 className="text-xl font-bold">{user?.username}</h2>
               <p className="text-zinc-400 flex items-center gap-2">
                 <Phone className="w-4 h-4" />
                 {user?.mobile}
@@ -173,11 +174,11 @@ const Profile = () => {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  Name
+                  Username
                 </Label>
                 <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                   disabled={!editing}
                   className="bg-zinc-800/50 border-white/10 disabled:opacity-70"
                 />
