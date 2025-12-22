@@ -222,6 +222,70 @@ const LandingPage = () => {
       </section>
 
       {/* Download CTA */}
+      <section className="py-20 px-4 bg-gradient-to-b from-zinc-900/50 to-transparent">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 p-8 md:p-12">
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-shrink-0">
+                <div className="w-24 h-24 bg-yellow-400 flex items-center justify-center transform -skew-x-12">
+                  <Smartphone className="w-12 h-12 text-black transform skew-x-12" />
+                </div>
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-2 font-['Chakra_Petch']">
+                  DOWNLOAD <span className="text-yellow-400">APP</span>
+                </h2>
+                <p className="text-zinc-400 mb-6">
+                  Install DHRIVO WON on your device for the best gaming experience. 
+                  Get instant notifications for new tournaments!
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                  <Button 
+                    onClick={() => {
+                      if ('BeforeInstallPromptEvent' in window || window.deferredPrompt) {
+                        window.deferredPrompt?.prompt();
+                      } else {
+                        alert('Open this site in Chrome and click "Add to Home Screen" from the menu!');
+                      }
+                    }}
+                    className="turbo-btn bg-yellow-400 hover:bg-yellow-300 text-black px-6 py-5 font-bold"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Chrome className="w-5 h-5" />
+                      INSTALL FROM CHROME
+                    </span>
+                  </Button>
+                  <div className="text-center sm:text-left">
+                    <p className="text-xs text-zinc-500">Works on</p>
+                    <p className="text-sm text-zinc-300">Android, iOS, Windows, Mac</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Install Steps */}
+            <div className="mt-8 pt-8 border-t border-yellow-500/20">
+              <h3 className="text-sm font-bold text-yellow-400 mb-4">HOW TO INSTALL:</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 bg-yellow-400 text-black flex items-center justify-center font-bold flex-shrink-0">1</span>
+                  <p className="text-zinc-400">Open this website in <span className="text-white">Chrome browser</span></p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 bg-yellow-400 text-black flex items-center justify-center font-bold flex-shrink-0">2</span>
+                  <p className="text-zinc-400">Click the <span className="text-white">menu (⋮)</span> button</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 bg-yellow-400 text-black flex items-center justify-center font-bold flex-shrink-0">3</span>
+                  <p className="text-zinc-400">Select <span className="text-white">"Install App"</span> or <span className="text-white">"Add to Home Screen"</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Ready to Compete */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4 font-['Chakra_Petch']">
@@ -235,7 +299,7 @@ const LandingPage = () => {
             <Link to="/register">
               <Button className="turbo-btn bg-yellow-400 hover:bg-yellow-300 text-black px-8 py-6 text-lg font-bold">
                 <span className="flex items-center gap-2">
-                  <Download className="w-5 h-5" />
+                  <Play className="w-5 h-5" />
                   REGISTER NOW
                 </span>
               </Button>
