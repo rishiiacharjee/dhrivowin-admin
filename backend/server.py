@@ -140,7 +140,7 @@ class LuckyDrawCreate(BaseModel):
 
 class ResultCreate(BaseModel):
     tournament_id: str
-    winners: List[dict]  # [{rank: 1, user_id: "...", prize: 100}]
+    winners: List[dict]  # [{rank: 1, user_id: "...", prize: 100, kills: 5}]
 
 class ProfileUpdate(BaseModel):
     name: Optional[str] = None
