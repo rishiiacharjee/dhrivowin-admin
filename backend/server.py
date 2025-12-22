@@ -794,7 +794,7 @@ async def startup_event():
     # Create default admin if not exists
     admin = await db.users.find_one({"mobile": "9999999999"})
     if not admin:
-    admin_user = {
+        admin_user = {
             "id": str(uuid.uuid4()),
             "mobile": "9999999999",
             "password": hash_password("admin123"),
