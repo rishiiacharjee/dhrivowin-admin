@@ -634,19 +634,27 @@ async def create_result(data: ResultCreate, admin=Depends(get_admin_user)):
     if not tournament:
         raise HTTPException(status_code=404, detail="Tournament not found")
     
+    per_kill_reward = tournament.get("per_kill_reward", 0)
+    
     result = {
         "id": str(uuid.uuid4()),
         "tournament_id": data.tournament_id,
         "tournament_title": tournament["title"],
+        "per_kill_reward": per_kill_reward,
         "winners": data.winners,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
-    # Credit winners
+    # Credit winners (base prize + per kill bonus)
     for winner in data.winners:
+        base_prize = winner.get("prize", 0)
+        kills = winner.get("kills", 0)
+        kill_bonus = kills * per_kill_reward
+        total_prize = base_prize + kill_bonus
+        
         await db.users.update_one(
             {"id": winner["user_id"]},
-            {"$inc": {"wallet_balance": winner.get("prize", 0)}}
+            {"$inc": {"wallet_balance": total_prize}}
         )
     
     await db.results.insert_one(result)
@@ -655,7 +663,7 @@ async def create_result(data: ResultCreate, admin=Depends(get_admin_user)):
         {"$set": {"status": "COMPLETED"}}
     )
     
-    return result
+    return {k: v for k, v in result.items() if k != "_id"}
 
 # ================== ADMIN ROUTES ==================
 
