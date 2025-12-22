@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Trophy, Users, Gamepad2, Download, ChevronRight, 
-  Zap, Shield, Coins, Star, Play
+  Zap, Shield, Coins, Star, Play, Smartphone, Chrome
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import api from '../lib/api';
