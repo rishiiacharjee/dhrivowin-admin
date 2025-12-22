@@ -85,6 +85,7 @@ class TournamentCreate(BaseModel):
     team_type: str  # SOLO, DUO, SQUAD
     entry_fee: int
     prize_pool: int
+    per_kill_reward: int = 0  # Per kill money
     max_participants: int
     match_time: str
     match_date: str
@@ -101,6 +102,7 @@ class TournamentResponse(BaseModel):
     team_type: str
     entry_fee: int
     prize_pool: int
+    per_kill_reward: int = 0
     max_participants: int
     current_participants: int
     match_time: str
