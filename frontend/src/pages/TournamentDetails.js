@@ -26,6 +26,7 @@ const TournamentDetails = () => {
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [joinData, setJoinData] = useState({ game_uid: '', game_name: '' });
   const [hasJoined, setHasJoined] = useState(false);
+  const [showJoinAnimation, setShowJoinAnimation] = useState(false);
 
   useEffect(() => {
     fetchTournament();
