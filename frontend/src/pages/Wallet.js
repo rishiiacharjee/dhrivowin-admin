@@ -21,7 +21,7 @@ const WalletPage = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rechargeAmount, setRechargeAmount] = useState('');
-  const [withdrawData, setWithdrawData] = useState({ amount: '', upi_id: '', bank_account: '', ifsc_code: '' });
+  const [withdrawData, setWithdrawData] = useState({ amount: '', upi_id: '', bank_account: '', ifsc_code: '', account_holder_name: '' });
   const [processing, setProcessing] = useState(false);
   const [rechargeDialogOpen, setRechargeDialogOpen] = useState(false);
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
@@ -127,6 +127,11 @@ const WalletPage = () => {
       return;
     }
 
+    if (!withdrawData.account_holder_name) {
+      toast.error('Account holder name is required');
+      return;
+    }
+
     if (amount > user?.wallet_balance) {
       toast.error('Insufficient balance');
       return;
@@ -138,13 +143,14 @@ const WalletPage = () => {
         amount,
         upi_id: withdrawData.upi_id || undefined,
         bank_account: withdrawData.bank_account || undefined,
-        ifsc_code: withdrawData.ifsc_code || undefined
+        ifsc_code: withdrawData.ifsc_code || undefined,
+        account_holder_name: withdrawData.account_holder_name
       });
       toast.success('Withdrawal request submitted! Processing in 5-10 minutes.');
       await refreshUser();
       fetchTransactions();
       setWithdrawDialogOpen(false);
-      setWithdrawData({ amount: '', upi_id: '', bank_account: '', ifsc_code: '' });
+      setWithdrawData({ amount: '', upi_id: '', bank_account: '', ifsc_code: '', account_holder_name: '' });
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Withdrawal failed');
     } finally {
@@ -294,17 +300,38 @@ const WalletPage = () => {
                       <TabsTrigger value="upi" className="flex-1">UPI</TabsTrigger>
                       <TabsTrigger value="bank" className="flex-1">Bank</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="upi" className="space-y-2 mt-4">
-                      <Label>UPI ID *</Label>
-                      <Input
-                        placeholder="yourname@upi"
-                        value={withdrawData.upi_id}
-                        onChange={(e) => setWithdrawData({ ...withdrawData, upi_id: e.target.value })}
-                        className="bg-zinc-800/50 border-white/10"
-                        data-testid="upi-id-input"
-                      />
+                    <TabsContent value="upi" className="space-y-4 mt-4">
+                      <div className="space-y-2">
+                        <Label>Account Holder Name *</Label>
+                        <Input
+                          placeholder="Enter name as per UPI"
+                          value={withdrawData.account_holder_name}
+                          onChange={(e) => setWithdrawData({ ...withdrawData, account_holder_name: e.target.value })}
+                          className="bg-zinc-800/50 border-white/10"
+                          data-testid="holder-name-input"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>UPI ID *</Label>
+                        <Input
+                          placeholder="yourname@upi"
+                          value={withdrawData.upi_id}
+                          onChange={(e) => setWithdrawData({ ...withdrawData, upi_id: e.target.value })}
+                          className="bg-zinc-800/50 border-white/10"
+                          data-testid="upi-id-input"
+                        />
+                      </div>
                     </TabsContent>
                     <TabsContent value="bank" className="space-y-4 mt-4">
+                      <div className="space-y-2">
+                        <Label>Account Holder Name *</Label>
+                        <Input
+                          placeholder="Enter name as per bank"
+                          value={withdrawData.account_holder_name}
+                          onChange={(e) => setWithdrawData({ ...withdrawData, account_holder_name: e.target.value })}
+                          className="bg-zinc-800/50 border-white/10"
+                        />
+                      </div>
                       <div className="space-y-2">
                         <Label>Account Number *</Label>
                         <Input
