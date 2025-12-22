@@ -530,7 +530,7 @@ async def create_giveaway(data: GiveawayCreate, admin=Depends(get_admin_user)):
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.giveaways.insert_one(giveaway)
-    return giveaway
+    return {k: v for k, v in giveaway.items() if k != "_id"}
 
 @api_router.post("/giveaways/{giveaway_id}/join")
 async def join_giveaway(giveaway_id: str, user=Depends(get_current_user)):
