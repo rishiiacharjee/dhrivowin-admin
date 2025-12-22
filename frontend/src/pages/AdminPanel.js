@@ -42,7 +42,7 @@ const AdminPanel = () => {
     try {
       await api.post('/tournaments', tournamentForm);
       toast.success('Tournament created!'); fetchAll();
-      setTournamentForm({ title: '', game_type: 'FREE_FIRE', mode: 'BR', team_type: 'SOLO', entry_fee: 10, prize_pool: 100, max_participants: 50, match_time: '', match_date: '', description: '', room_id: '', room_password: '' });
+      setTournamentForm({ title: '', game_type: 'FREE_FIRE', mode: 'BR', team_type: 'SOLO', entry_fee: 10, prize_pool: 100, per_kill_reward: 0, max_participants: 50, match_time: '', match_date: '', description: '', room_id: '', room_password: '' });
     } catch (error) { toast.error('Failed to create tournament'); }
   };
 
