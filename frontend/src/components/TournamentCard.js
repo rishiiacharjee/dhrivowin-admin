@@ -78,6 +78,14 @@ const TournamentCard = ({ tournament }) => {
             </div>
           </div>
 
+          {/* Per Kill Reward */}
+          {tournament.per_kill_reward > 0 && (
+            <div className="bg-red-500/10 border border-red-500/30 p-2 text-center">
+              <div className="text-red-400 font-bold text-lg">{tournament.per_kill_reward} DR</div>
+              <div className="text-xs text-red-400/70 uppercase">Per Kill</div>
+            </div>
+          )}
+
           {/* Participants */}
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2 text-zinc-400">
