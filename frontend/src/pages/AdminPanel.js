@@ -20,7 +20,7 @@ const AdminPanel = () => {
   const [giveaways, setGiveaways] = useState([]);
   const [luckyDraws, setLuckyDraws] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tournamentForm, setTournamentForm] = useState({ title: '', game_type: 'FREE_FIRE', mode: 'BR', team_type: 'SOLO', entry_fee: 10, prize_pool: 100, max_participants: 50, match_time: '', match_date: '', description: '', room_id: '', room_password: '' });
+  const [tournamentForm, setTournamentForm] = useState({ title: '', game_type: 'FREE_FIRE', mode: 'BR', team_type: 'SOLO', entry_fee: 10, prize_pool: 100, per_kill_reward: 0, max_participants: 50, match_time: '', match_date: '', description: '', room_id: '', room_password: '' });
   const [newsForm, setNewsForm] = useState({ title: '', content: '' });
   const [giveawayForm, setGiveawayForm] = useState({ title: '', description: '', prize: '', end_date: '', image_url: '', external_link: '' });
   const [luckyDrawForm, setLuckyDrawForm] = useState({ title: '', entry_cost: 10, prize_amount: 100, max_entries: 50, end_date: '' });
