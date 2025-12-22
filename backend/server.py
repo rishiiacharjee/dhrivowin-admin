@@ -506,7 +506,7 @@ async def create_news(data: NewsCreate, admin=Depends(get_admin_user)):
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.news.insert_one(news_item)
-    return news_item
+    return {k: v for k, v in news_item.items() if k != "_id"}
 
 @api_router.delete("/news/{news_id}")
 async def delete_news(news_id: str, admin=Depends(get_admin_user)):
