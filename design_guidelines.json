@@ -1,0 +1,157 @@
+{
+  "identity": {
+    "name": "DHRIVO WON©",
+    "vibe": "Rishidhani Turbo - Aggressive, High-Energy, Competitive",
+    "aesthetic": "Cyber-Sport Industrial",
+    "emotional_tone": "Adrenaline, Precision, Victory"
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Chakra Petch, sans-serif",
+      "body": "Rajdhani, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "import_url": "https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap",
+    "rules": {
+      "headings": "Uppercase, tracking-tight, bold weights (600/700). Use for all section titles and card headers.",
+      "body": "Medium weight (500) for better readability on dark backgrounds. Relaxed leading.",
+      "accent": "Use 'Teko' or 'Bebas Neue' style sizing (very large) for numbers and stats."
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary": "#FACC15",
+      "primary_foreground": "#000000",
+      "secondary": "#27272A",
+      "secondary_foreground": "#FFFFFF",
+      "background": "#09090B",
+      "foreground": "#FAFAFA",
+      "card": "#18181B",
+      "card_foreground": "#FAFAFA",
+      "border": "#27272A",
+      "input": "#27272A",
+      "ring": "#FACC15",
+      "destructive": "#EF4444",
+      "success": "#22C55E"
+    },
+    "gradients": {
+      "turbo_yellow": "linear-gradient(135deg, #FACC15 0%, #EAB308 100%)",
+      "dark_void": "linear-gradient(180deg, #09090B 0%, #18181B 100%)",
+      "glass_surface": "linear-gradient(180deg, rgba(24, 24, 27, 0.6) 0%, rgba(9, 9, 11, 0.8) 100%)"
+    },
+    "usage": {
+      "primary": "CTAs, Active States, Winning Numbers, 'Join' Buttons",
+      "background": "Global page background. NEVER use pure black #000000, use #09090B.",
+      "card": "Container backgrounds. Use with 1px border-white/10.",
+      "text_hierarchy": {
+        "h1": "#FFFFFF",
+        "p": "#A1A1AA",
+        "muted": "#71717A"
+      }
+    }
+  },
+  "visual_enhancers": {
+    "borders": {
+      "default": "1px solid rgba(255, 255, 255, 0.1)",
+      "active": "1px solid #FACC15",
+      "glow": "box-shadow: 0 0 20px rgba(250, 204, 21, 0.3)"
+    },
+    "radius": {
+      "default": "0px",
+      "buttons": "2px",
+      "cards": "4px"
+    },
+    "effects": {
+      "glassmorphism": "backdrop-filter: blur(12px); background: rgba(24, 24, 27, 0.7); border: 1px solid rgba(255, 255, 255, 0.08);",
+      "neon_glow": "text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);",
+      "scanlines": "background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 2px, 3px 100%;"
+    }
+  },
+  "layout_strategies": {
+    "landing_page": {
+      "type": "Tetris Grid",
+      "description": "Asymmetric, high-impact visual blocks. Hero section must dominate.",
+      "grid_cols": "grid-cols-1 md:grid-cols-12",
+      "gap": "gap-4 md:gap-6"
+    },
+    "dashboard": {
+      "type": "Control Room",
+      "description": "Dense, data-heavy, minimal scrolling. Sidebar navigation.",
+      "grid_cols": "grid-cols-1 md:grid-cols-4",
+      "gap": "gap-4"
+    },
+    "mobile": {
+      "type": "Stack",
+      "description": "Vertical scroll, bottom navigation bar for app-like feel.",
+      "padding": "p-4"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground font-bold uppercase tracking-wider hover:bg-yellow-400 transition-all skew-x-[-10deg]",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 skew-x-[-10deg]",
+      "ghost": "hover:bg-accent hover:text-accent-foreground"
+    },
+    "cards": {
+      "tournament": "relative overflow-hidden border border-white/10 bg-card hover:border-primary/50 transition-colors group",
+      "stat": "bg-secondary/50 p-4 border-l-2 border-primary"
+    },
+    "inputs": {
+      "default": "bg-secondary/50 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-none"
+    }
+  },
+  "image_urls": {
+    "hero_background": {
+      "url": "https://images.pexels.com/photos/9072202/pexels-photo-9072202.jpeg",
+      "alt": "Esports Arena Neon Lights",
+      "usage": "Landing page hero background, overlay with dark gradient"
+    },
+    "game_modes": {
+      "battle_royale": {
+        "url": "https://images.pexels.com/photos/3526022/pexels-photo-3526022.jpeg",
+        "alt": "Futuristic Soldier",
+        "usage": "Card background for Battle Royale mode"
+      },
+      "clash_squad": {
+        "url": "https://images.pexels.com/photos/8183683/pexels-photo-8183683.jpeg",
+        "alt": "Tactical Operator",
+        "usage": "Card background for Clash Squad mode"
+      }
+    },
+    "rewards": {
+      "coin": {
+        "url": "https://images.pexels.com/photos/12198525/pexels-photo-12198525.jpeg",
+        "alt": "Gold Coin",
+        "usage": "Wallet icon, recharge page visual"
+      },
+      "trophy": {
+        "url": "https://images.pexels.com/photos/6532374/pexels-photo-6532374.jpeg",
+        "alt": "Gold Trophy",
+        "usage": "Leaderboard header, tournament winner section"
+      }
+    },
+    "lifestyle": {
+      "gamer": {
+        "url": "https://images.pexels.com/photos/7047615/pexels-photo-7047615.jpeg",
+        "alt": "Mobile Gamer",
+        "usage": "User profile default, landing page social proof"
+      }
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. SETUP: Install 'lucide-react' for icons. Import the fonts in index.css immediately.",
+    "2. THEME: Force DARK MODE. Do not implement a light mode toggle. The brand is strictly dark.",
+    "3. LAYOUT: Use the 'Bento Grid' strategy for the dashboard. Avoid simple list views.",
+    "4. COMPONENTS: Customize Shadcn components to remove rounded corners (set radius to 0 or 2px).",
+    "5. MOTION: Add 'framer-motion' for page transitions and hover effects. Cards should scale slightly (1.02) on hover.",
+    "6. DATA: Use 'data-testid' on all interactive elements (buttons, inputs, cards).",
+    "7. NAV: Implement a Bottom Navigation Bar for mobile views (Home, Matches, Wallet, Profile).",
+    "8. GLASS: Use the glassmorphism effect for the Navbar and sticky headers."
+  ],
+  "universal_guidelines": {
+    "spacing": "Use generous padding (p-6, p-8) inside containers. Don't let text touch borders.",
+    "contrast": "Ensure all text is legible. Use 'text-zinc-400' for secondary text, 'text-white' for primary.",
+    "interaction": "All buttons must have a hover state (brightness-110 or translate-y-[-2px]).",
+    "empty_states": "Never leave a section empty. Use a placeholder icon and text (e.g., 'No upcoming matches')."
+  }
+}
