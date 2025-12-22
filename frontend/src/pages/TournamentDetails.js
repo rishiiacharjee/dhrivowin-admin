@@ -69,6 +69,7 @@ const TournamentDetails = () => {
       toast.success('Successfully joined the tournament!');
       setJoinDialogOpen(false);
       setHasJoined(true);
+      setShowJoinAnimation(true);
       
       // Show room details if available
       if (response.data.room_id) {
