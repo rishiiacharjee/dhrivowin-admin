@@ -202,6 +202,21 @@ const TournamentDetails = () => {
               </div>
             </div>
 
+            {/* Per Kill Reward Banner */}
+            {tournament.per_kill_reward > 0 && (
+              <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/50 p-4 mb-6">
+                <div className="flex items-center justify-center gap-4">
+                  <Crosshair className="w-8 h-8 text-red-400" />
+                  <div className="text-center">
+                    <p className="text-sm text-red-400 uppercase font-bold">Per Kill Reward</p>
+                    <p className="text-3xl font-bold text-white">{tournament.per_kill_reward} <span className="text-lg text-red-400">DR</span></p>
+                  </div>
+                  <Crosshair className="w-8 h-8 text-red-400" />
+                </div>
+                <p className="text-center text-xs text-zinc-400 mt-2">Every kill = Extra {tournament.per_kill_reward} DR in your wallet!</p>
+              </div>
+            )}
+
             {/* Progress Bar */}
             <div className="mb-6">
               <div className="flex justify-between text-sm mb-2">
