@@ -111,6 +111,7 @@ const TournamentDetails = () => {
   return (
     <div className="min-h-screen bg-[#09090B] pb-20 md:pb-8">
       <Navbar />
+      <JoinAnimation show={showJoinAnimation} onComplete={() => setShowJoinAnimation(false)} />
       
       <main className="max-w-4xl mx-auto px-4 py-6 pt-20">
         {/* Back Button */}
