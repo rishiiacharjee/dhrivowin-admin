@@ -159,7 +159,7 @@ const AdminPanel = () => {
                   <div key={t.id} className="flex items-center justify-between bg-zinc-800/50 p-3">
                     <div>
                       <p className="font-semibold">{t.title}</p>
-                      <p className="text-xs text-zinc-500">{t.game_type} • {t.mode} • {t.team_type} • {t.current_participants}/{t.max_participants}</p>
+                      <p className="text-xs text-zinc-500">{t.game_type} • {t.mode} • {t.team_type} • {t.current_participants}/{t.max_participants} {t.per_kill_reward > 0 && <span className="text-red-400">• 💀{t.per_kill_reward}/kill</span>}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Select value={t.status} onValueChange={(v) => updateTournamentStatus(t.id, v)}>
