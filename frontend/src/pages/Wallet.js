@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const RAZORPAY_KEY = 'rzp_test_RuXIonf6uKNzBO';
+const RAZORPAY_KEY = 'rzp_test_RugX0n4GoBXMdm';
 
 const WalletPage = () => {
   const { user, refreshUser } = useAuth();
