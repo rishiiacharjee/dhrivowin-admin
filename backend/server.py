@@ -123,6 +123,7 @@ class MatchJoin(BaseModel):
     tournament_id: str
     game_uid: str
     game_name: str
+    slot_number: int = 1
 
 class NewsCreate(BaseModel):
     title: str
@@ -149,6 +150,7 @@ class ResultCreate(BaseModel):
 
 class ProfileUpdate(BaseModel):
     username: Optional[str] = None
+    email: Optional[str] = None
     game_uid: Optional[str] = None
     game_name: Optional[str] = None
     upi_id: Optional[str] = None
@@ -160,6 +162,23 @@ class PasswordReset(BaseModel):
     mobile: str
     backup_code: str
     new_password: str
+
+class AdminResetRequest(BaseModel):
+    mobile: str
+
+class AdminResetVerify(BaseModel):
+    mobile: str
+    reset_code: str
+    new_password: str
+
+class AdminGiveAmount(BaseModel):
+    user_id: str
+    amount: int
+    reason: Optional[str] = None
+
+class AdminBlockUser(BaseModel):
+    user_id: str
+    is_blocked: bool
 
 # ================== HELPERS ==================
 
