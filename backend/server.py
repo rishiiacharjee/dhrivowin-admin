@@ -564,6 +564,14 @@ async def join_tournament(tournament_id: str, data: MatchJoin, user=Depends(get_
     if existing:
         raise HTTPException(status_code=400, detail="Already joined this tournament")
     
+    # Check if slot is taken
+    slot_taken = await db.participants.find_one({
+        "tournament_id": tournament_id,
+        "slot_number": data.slot_number
+    })
+    if slot_taken:
+        raise HTTPException(status_code=400, detail=f"Slot {data.slot_number} is already taken")
+    
     # Check wallet balance
     if user["wallet_balance"] < tournament["entry_fee"]:
         raise HTTPException(status_code=400, detail="Insufficient wallet balance")
@@ -579,8 +587,10 @@ async def join_tournament(tournament_id: str, data: MatchJoin, user=Depends(get_
         "id": str(uuid.uuid4()),
         "tournament_id": tournament_id,
         "user_id": user["id"],
+        "username": user.get("username", "Player"),
         "game_uid": data.game_uid,
         "game_name": data.game_name,
+        "slot_number": data.slot_number,
         "joined_at": datetime.now(timezone.utc).isoformat()
     }
     await db.participants.insert_one(participant)
@@ -591,7 +601,7 @@ async def join_tournament(tournament_id: str, data: MatchJoin, user=Depends(get_
         {"$inc": {"current_participants": 1}}
     )
     
-    return {"message": "Successfully joined tournament", "room_id": tournament.get("room_id"), "room_password": tournament.get("room_password")}
+    return {"message": "Successfully joined tournament", "slot_number": data.slot_number, "room_id": tournament.get("room_id"), "room_password": tournament.get("room_password")}
 
 @api_router.get("/tournaments/{tournament_id}/participants")
 async def get_participants(tournament_id: str):
