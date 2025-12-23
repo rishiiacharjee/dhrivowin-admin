@@ -380,7 +380,7 @@ async def cancel_tournament(tournament_id: str, admin=Depends(get_admin_user)):
 
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(user=Depends(get_current_user)):
-    return {k: v for k, v in user.items() if k != "password"}
+    return {k: v for k, v in user.items() if k not in ["password", "reset_code"]}
 
 @api_router.put("/auth/profile")
 async def update_profile(data: ProfileUpdate, user=Depends(get_current_user)):
