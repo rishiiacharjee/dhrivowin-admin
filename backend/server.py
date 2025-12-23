@@ -42,6 +42,7 @@ security = HTTPBearer()
 
 class UserRegister(BaseModel):
     mobile: str
+    email: Optional[str] = None
     password: str
     referral_code: Optional[str] = None
     username: str
@@ -53,11 +54,13 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: str
     mobile: str
+    email: Optional[str] = None
     username: str
     wallet_balance: float = 0
     referral_code: str
     backup_code: str
     is_admin: bool = False
+    is_blocked: bool = False
     game_uid: Optional[str] = None
     game_name: Optional[str] = None
     upi_id: Optional[str] = None
