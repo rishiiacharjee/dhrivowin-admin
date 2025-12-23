@@ -180,6 +180,22 @@ const RegisterPage = () => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="email">Email (Optional)</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter email address"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="pl-10 bg-zinc-800/50 border-white/10 focus:border-yellow-400"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="password">Password *</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
