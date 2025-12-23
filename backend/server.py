@@ -272,8 +272,11 @@ async def login(data: UserLogin):
     if not user or not verify_password(data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    if user.get("is_blocked", False):
+        raise HTTPException(status_code=403, detail="Account is blocked. Contact admin.")
+    
     token = create_token(user["id"], user.get("is_admin", False))
-    user_response = {k: v for k, v in user.items() if k != "password"}
+    user_response = {k: v for k, v in user.items() if k not in ["password", "reset_code"]}
     return {"access_token": token, "user": user_response}
 
 @api_router.post("/auth/reset-password")
