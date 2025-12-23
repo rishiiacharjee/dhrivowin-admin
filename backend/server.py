@@ -228,39 +228,42 @@ async def register(data: UserRegister):
     referral_code = generate_code(6)
     backup_code = generate_code(10)
     
-    # Handle referral bonus
+    # Handle referral bonus - 5 DR each
     bonus = 0
     if data.referral_code:
         referrer = await db.users.find_one({"referral_code": data.referral_code})
         if referrer:
-            bonus = 10  # 10 DR bonus for using referral
+            bonus = 5  # 5 DR bonus for new user
             await db.users.update_one(
                 {"id": referrer["id"]},
-                {"$inc": {"wallet_balance": 20}}  # 20 DR for referrer
+                {"$inc": {"wallet_balance": 5}}  # 5 DR for referrer
             )
     
     user = {
         "id": user_id,
         "mobile": data.mobile,
+        "email": data.email,
         "password": hash_password(data.password),
         "username": data.username,
         "wallet_balance": bonus,
         "referral_code": referral_code,
         "backup_code": backup_code,
         "is_admin": False,
+        "is_blocked": False,
         "game_uid": None,
         "game_name": None,
         "upi_id": None,
         "bank_account": None,
         "ifsc_code": None,
         "account_holder_name": None,
+        "reset_code": None,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
     await db.users.insert_one(user)
     token = create_token(user_id)
     
-    user_response = {k: v for k, v in user.items() if k != "password"}
+    user_response = {k: v for k, v in user.items() if k not in ["password", "_id", "reset_code"]}
     return {"access_token": token, "user": user_response}
 
 @api_router.post("/auth/login", response_model=TokenResponse)
