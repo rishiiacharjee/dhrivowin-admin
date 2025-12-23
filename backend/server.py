@@ -180,6 +180,12 @@ class AdminBlockUser(BaseModel):
     user_id: str
     is_blocked: bool
 
+class NotificationCreate(BaseModel):
+    user_id: Optional[str] = None  # None = all users
+    title: str
+    message: str
+    notification_type: str = "GENERAL"  # GENERAL, MATCH_REMINDER, RESULT, ADMIN
+
 # ================== HELPERS ==================
 
 def generate_code(length=8):
