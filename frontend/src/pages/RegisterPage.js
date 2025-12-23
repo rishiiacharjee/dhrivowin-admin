@@ -5,12 +5,13 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
-import { Phone, Lock, Eye, EyeOff, User, Gift, Loader2, Copy, Check } from 'lucide-react';
+import { Phone, Lock, Eye, EyeOff, User, Gift, Loader2, Copy, Check, Mail } from 'lucide-react';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
     username: '',
     mobile: '',
+    email: '',
     password: '',
     confirmPassword: '',
     referral_code: ''
@@ -49,6 +50,7 @@ const RegisterPage = () => {
       const userData = await register({
         username: formData.username,
         mobile: formData.mobile,
+        email: formData.email || undefined,
         password: formData.password,
         referral_code: formData.referral_code || undefined
       });
