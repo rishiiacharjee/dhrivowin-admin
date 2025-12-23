@@ -291,6 +291,93 @@ async def reset_password(data: PasswordReset):
     )
     return {"message": "Password reset successful"}
 
+# Admin generates reset code for user
+@api_router.post("/admin/generate-reset-code")
+async def generate_reset_code(data: AdminResetRequest, admin=Depends(get_admin_user)):
+    user = await db.users.find_one({"mobile": data.mobile})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    reset_code = generate_code(6)
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"reset_code": reset_code}}
+    )
+    return {"message": "Reset code generated", "reset_code": reset_code, "username": user.get("username"), "mobile": data.mobile}
+
+# User verifies admin reset code
+@api_router.post("/auth/verify-admin-reset")
+async def verify_admin_reset(data: AdminResetVerify):
+    user = await db.users.find_one({"mobile": data.mobile, "reset_code": data.reset_code})
+    if not user or not user.get("reset_code"):
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code")
+    
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"password": hash_password(data.new_password), "reset_code": None}}
+    )
+    return {"message": "Password reset successful"}
+
+# Admin give amount to user
+@api_router.post("/admin/give-amount")
+async def admin_give_amount(data: AdminGiveAmount, admin=Depends(get_admin_user)):
+    user = await db.users.find_one({"id": data.user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    await db.users.update_one(
+        {"id": data.user_id},
+        {"$inc": {"wallet_balance": data.amount}}
+    )
+    
+    # Log transaction
+    transaction = {
+        "id": str(uuid.uuid4()),
+        "user_id": data.user_id,
+        "amount": data.amount,
+        "type": "ADMIN_CREDIT",
+        "reason": data.reason or "Admin credited",
+        "status": "SUCCESS",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.transactions.insert_one(transaction)
+    
+    return {"message": f"Credited {data.amount} DR to user"}
+
+# Admin block/unblock user
+@api_router.post("/admin/block-user")
+async def admin_block_user(data: AdminBlockUser, admin=Depends(get_admin_user)):
+    await db.users.update_one(
+        {"id": data.user_id},
+        {"$set": {"is_blocked": data.is_blocked}}
+    )
+    action = "blocked" if data.is_blocked else "unblocked"
+    return {"message": f"User {action} successfully"}
+
+# Admin cancel tournament and refund
+@api_router.post("/admin/cancel-tournament/{tournament_id}")
+async def cancel_tournament(tournament_id: str, admin=Depends(get_admin_user)):
+    tournament = await db.tournaments.find_one({"id": tournament_id})
+    if not tournament:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    
+    # Refund all participants
+    participants = await db.participants.find({"tournament_id": tournament_id}).to_list(500)
+    for p in participants:
+        await db.users.update_one(
+            {"id": p["user_id"]},
+            {"$inc": {"wallet_balance": tournament["entry_fee"]}}
+        )
+    
+    # Delete participants and update tournament
+    await db.participants.delete_many({"tournament_id": tournament_id})
+    await db.tournaments.update_one(
+        {"id": tournament_id},
+        {"$set": {"status": "CANCELLED", "current_participants": 0}}
+    )
+    
+    return {"message": f"Tournament cancelled. Refunded {len(participants)} participants."}
+
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(user=Depends(get_current_user)):
     return {k: v for k, v in user.items() if k != "password"}
