@@ -111,9 +111,9 @@ const LandingPage = () => {
               className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-xl p-6 max-w-md mx-auto"
             >
               <Smartphone className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-              <h2 className="text-xl font-bold mb-2">App Download Karein</h2>
+              <h2 className="text-xl font-bold mb-2">Download the App</h2>
               <p className="text-sm text-zinc-400 mb-6">
-                Registration sirf app se hogi. Website se registration nahi hoga.
+                Registration only available through the app. Website registration is not allowed.
               </p>
 
               <Button 
@@ -127,15 +127,15 @@ const LandingPage = () => {
               <div className="text-left space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="w-5 h-5 bg-yellow-400 text-black rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                  <span className="text-zinc-400">Menu (⋮) click karein</span>
+                  <span className="text-zinc-400">Click Menu (⋮)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-5 h-5 bg-yellow-400 text-black rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                  <span className="text-zinc-400">"Install App" select karein</span>
+                  <span className="text-zinc-400">Select "Install App"</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-5 h-5 bg-yellow-400 text-black rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                  <span className="text-zinc-400">Home screen se open karein</span>
+                  <span className="text-zinc-400">Open from Home Screen</span>
                 </div>
               </div>
             </motion.div>

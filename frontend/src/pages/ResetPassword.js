@@ -77,7 +77,7 @@ const ResetPassword = () => {
             <TabsContent value="backup">
               <form onSubmit={handleBackupReset} className="space-y-4">
                 <p className="text-sm text-zinc-400 mb-4">
-                  Registration ke time mila hua backup code use karein
+                  Use the backup code you received during registration
                 </p>
                 <div className="space-y-2">
                   <Label>Mobile Number</Label>
@@ -128,7 +128,7 @@ const ResetPassword = () => {
               <form onSubmit={handleAdminReset} className="space-y-4">
                 <div className="bg-blue-500/10 border border-blue-500/30 p-3 rounded mb-4">
                   <p className="text-sm text-blue-400">
-                    ⚠️ Backup code bhul gaye? Admin se WhatsApp pe code lein aur yahan enter karein.
+                    ⚠️ Forgot backup code? Contact admin on WhatsApp to get a reset code.
                   </p>
                 </div>
                 <div className="space-y-2">
