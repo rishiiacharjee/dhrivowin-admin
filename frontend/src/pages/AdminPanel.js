@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { toast } from 'sonner';
-import { Shield, Plus, Users, Trophy, Wallet, Newspaper, Gift, Ticket, Loader2, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Shield, Plus, Users, Trophy, Wallet, Newspaper, Gift, Ticket, Loader2, Trash2, CheckCircle, XCircle, Ban, DollarSign, Key, RefreshCw } from 'lucide-react';
 
 const AdminPanel = () => {
   const [stats, setStats] = useState({});
@@ -24,6 +24,9 @@ const AdminPanel = () => {
   const [newsForm, setNewsForm] = useState({ title: '', content: '' });
   const [giveawayForm, setGiveawayForm] = useState({ title: '', description: '', prize: '', end_date: '', image_url: '', external_link: '' });
   const [luckyDrawForm, setLuckyDrawForm] = useState({ title: '', entry_cost: 10, prize_amount: 100, max_entries: 50, end_date: '' });
+  const [resetMobile, setResetMobile] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [giveAmountData, setGiveAmountData] = useState({ user_id: '', amount: 0, reason: '' });
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -76,10 +79,43 @@ const AdminPanel = () => {
     catch (error) { toast.error('Delete failed'); }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#09090B] flex items-center justify-center"><Loader2 className="w-8 h-8 text-yellow-400 animate-spin" /></div>;
+  const cancelTournament = async (id) => {
+    try { 
+      await api.post(`/admin/cancel-tournament/${id}`); 
+      toast.success('Tournament cancelled & refunded!'); 
+      fetchAll(); 
+    } catch (error) { toast.error('Cancel failed'); }
+  };
+
+  const generateResetCode = async () => {
+    try {
+      const res = await api.post('/admin/generate-reset-code', { mobile: resetMobile });
+      setResetCode(res.data.reset_code);
+      toast.success(`Reset code: ${res.data.reset_code} - Share via WhatsApp to ${res.data.username}`);
+    } catch (error) { toast.error(error.response?.data?.detail || 'Failed'); }
+  };
+
+  const blockUser = async (userId, block) => {
+    try {
+      await api.post('/admin/block-user', { user_id: userId, is_blocked: block });
+      toast.success(block ? 'User blocked' : 'User unblocked');
+      fetchAll();
+    } catch (error) { toast.error('Failed'); }
+  };
+
+  const giveAmount = async () => {
+    try {
+      await api.post('/admin/give-amount', giveAmountData);
+      toast.success(`Credited ${giveAmountData.amount} DR`);
+      fetchAll();
+      setGiveAmountData({ user_id: '', amount: 0, reason: '' });
+    } catch (error) { toast.error('Failed'); }
+  };
+
+  if (loading) return <div className="min-h-screen bg-[#0a1628] flex items-center justify-center"><Loader2 className="w-8 h-8 text-yellow-400 animate-spin" /></div>;
 
   return (
-    <div className="min-h-screen bg-[#09090B] pb-20 md:pb-8">
+    <div className="min-h-screen bg-[#0a1628] pb-20 md:pb-8">
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 py-6 pt-20">
         <div className="mb-6">
@@ -90,15 +126,16 @@ const AdminPanel = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-zinc-900/50 border border-white/10 p-4"><Users className="w-6 h-6 text-blue-400 mb-2" /><p className="text-2xl font-bold">{stats.total_users}</p><p className="text-xs text-zinc-500">Users</p></div>
-          <div className="bg-zinc-900/50 border border-white/10 p-4"><Trophy className="w-6 h-6 text-yellow-400 mb-2" /><p className="text-2xl font-bold">{stats.total_tournaments}</p><p className="text-xs text-zinc-500">Tournaments</p></div>
-          <div className="bg-zinc-900/50 border border-white/10 p-4"><Trophy className="w-6 h-6 text-green-400 mb-2" /><p className="text-2xl font-bold">{stats.active_tournaments}</p><p className="text-xs text-zinc-500">Active</p></div>
-          <div className="bg-zinc-900/50 border border-white/10 p-4"><Wallet className="w-6 h-6 text-purple-400 mb-2" /><p className="text-2xl font-bold">{stats.total_transactions}</p><p className="text-xs text-zinc-500">Transactions</p></div>
+          <div className="bg-zinc-900/50 border border-white/10 p-4 rounded-lg"><Users className="w-6 h-6 text-blue-400 mb-2" /><p className="text-2xl font-bold">{stats.total_users}</p><p className="text-xs text-zinc-500">Users</p></div>
+          <div className="bg-zinc-900/50 border border-white/10 p-4 rounded-lg"><Trophy className="w-6 h-6 text-yellow-400 mb-2" /><p className="text-2xl font-bold">{stats.total_tournaments}</p><p className="text-xs text-zinc-500">Tournaments</p></div>
+          <div className="bg-zinc-900/50 border border-white/10 p-4 rounded-lg"><Trophy className="w-6 h-6 text-green-400 mb-2" /><p className="text-2xl font-bold">{stats.active_tournaments}</p><p className="text-xs text-zinc-500">Active</p></div>
+          <div className="bg-zinc-900/50 border border-white/10 p-4 rounded-lg"><Wallet className="w-6 h-6 text-purple-400 mb-2" /><p className="text-2xl font-bold">{stats.total_transactions}</p><p className="text-xs text-zinc-500">Transactions</p></div>
         </div>
 
         <Tabs defaultValue="tournaments">
-          <TabsList className="bg-zinc-900/50 border border-white/10 p-1 mb-6 overflow-x-auto">
+          <TabsList className="bg-zinc-900/50 border border-white/10 p-1 mb-6 overflow-x-auto flex-wrap">
             <TabsTrigger value="tournaments" className="data-[state=active]:bg-yellow-400 data-[state=active]:text-black">Tournaments</TabsTrigger>
+            <TabsTrigger value="users" className="data-[state=active]:bg-yellow-400 data-[state=active]:text-black">Users</TabsTrigger>
             <TabsTrigger value="withdrawals" className="data-[state=active]:bg-yellow-400 data-[state=active]:text-black">Withdrawals</TabsTrigger>
             <TabsTrigger value="news" className="data-[state=active]:bg-yellow-400 data-[state=active]:text-black">News</TabsTrigger>
             <TabsTrigger value="giveaways" className="data-[state=active]:bg-yellow-400 data-[state=active]:text-black">Giveaways</TabsTrigger>
@@ -107,7 +144,7 @@ const AdminPanel = () => {
 
           {/* Tournaments Tab */}
           <TabsContent value="tournaments">
-            <div className="bg-zinc-900/50 border border-white/10 p-6">
+            <div className="bg-zinc-900/50 border border-white/10 p-6 rounded-lg">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-bold">Manage Tournaments</h2>
                 <Dialog>
@@ -131,24 +168,23 @@ const AdminPanel = () => {
                         </Select>
                       </div>
                       <div className="grid grid-cols-3 gap-4">
-                        <Input type="number" placeholder="Entry Fee" value={tournamentForm.entry_fee} onChange={(e) => setTournamentForm({...tournamentForm, entry_fee: parseInt(e.target.value)})} className="bg-zinc-800/50 border-white/10" />
-                        <Input type="number" placeholder="Prize Pool" value={tournamentForm.prize_pool} onChange={(e) => setTournamentForm({...tournamentForm, prize_pool: parseInt(e.target.value)})} className="bg-zinc-800/50 border-white/10" />
-                        <Input type="number" placeholder="Max Players" value={tournamentForm.max_participants} onChange={(e) => setTournamentForm({...tournamentForm, max_participants: parseInt(e.target.value)})} className="bg-zinc-800/50 border-white/10" />
+                        <div><Label className="text-xs">Entry Fee</Label><Input type="number" value={tournamentForm.entry_fee} onChange={(e) => setTournamentForm({...tournamentForm, entry_fee: parseInt(e.target.value)})} className="bg-zinc-800/50 border-white/10" /></div>
+                        <div><Label className="text-xs">Prize Pool</Label><Input type="number" value={tournamentForm.prize_pool} onChange={(e) => setTournamentForm({...tournamentForm, prize_pool: parseInt(e.target.value)})} className="bg-zinc-800/50 border-white/10" /></div>
+                        <div><Label className="text-xs">Max Slots</Label><Input type="number" value={tournamentForm.max_participants} onChange={(e) => setTournamentForm({...tournamentForm, max_participants: parseInt(e.target.value)})} className="bg-zinc-800/50 border-white/10" /></div>
                       </div>
-                      <div className="bg-red-500/10 border border-red-500/30 p-3">
+                      <div className="bg-red-500/10 border border-red-500/30 p-3 rounded">
                         <Label className="text-red-400 font-bold text-sm mb-2 block">💀 PER KILL REWARD (DR)</Label>
-                        <Input type="number" placeholder="Per Kill Money (0 = disabled)" value={tournamentForm.per_kill_reward} onChange={(e) => setTournamentForm({...tournamentForm, per_kill_reward: parseInt(e.target.value) || 0})} className="bg-zinc-800/50 border-red-500/30" />
-                        <p className="text-xs text-zinc-500 mt-1">Set 0 to disable per kill rewards</p>
+                        <Input type="number" placeholder="0 = disabled" value={tournamentForm.per_kill_reward} onChange={(e) => setTournamentForm({...tournamentForm, per_kill_reward: parseInt(e.target.value) || 0})} className="bg-zinc-800/50 border-red-500/30" />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <Input type="date" value={tournamentForm.match_date} onChange={(e) => setTournamentForm({...tournamentForm, match_date: e.target.value})} className="bg-zinc-800/50 border-white/10" />
-                        <Input type="time" value={tournamentForm.match_time} onChange={(e) => setTournamentForm({...tournamentForm, match_time: e.target.value})} className="bg-zinc-800/50 border-white/10" />
+                        <div><Label className="text-xs">Match Date</Label><Input type="date" value={tournamentForm.match_date} onChange={(e) => setTournamentForm({...tournamentForm, match_date: e.target.value})} className="bg-zinc-800/50 border-white/10" /></div>
+                        <div><Label className="text-xs">Match Time</Label><Input type="time" value={tournamentForm.match_time} onChange={(e) => setTournamentForm({...tournamentForm, match_time: e.target.value})} className="bg-zinc-800/50 border-white/10" /></div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <Input placeholder="Room ID" value={tournamentForm.room_id} onChange={(e) => setTournamentForm({...tournamentForm, room_id: e.target.value})} className="bg-zinc-800/50 border-white/10" />
-                        <Input placeholder="Room Password" value={tournamentForm.room_password} onChange={(e) => setTournamentForm({...tournamentForm, room_password: e.target.value})} className="bg-zinc-800/50 border-white/10" />
+                        <div><Label className="text-xs">Room ID</Label><Input placeholder="Room ID" value={tournamentForm.room_id} onChange={(e) => setTournamentForm({...tournamentForm, room_id: e.target.value})} className="bg-zinc-800/50 border-white/10" /></div>
+                        <div><Label className="text-xs">Room Password</Label><Input placeholder="Room Password" value={tournamentForm.room_password} onChange={(e) => setTournamentForm({...tournamentForm, room_password: e.target.value})} className="bg-zinc-800/50 border-white/10" /></div>
                       </div>
-                      <Textarea placeholder="Description" value={tournamentForm.description} onChange={(e) => setTournamentForm({...tournamentForm, description: e.target.value})} className="bg-zinc-800/50 border-white/10" />
+                      <Textarea placeholder="Description (Rules, etc.)" value={tournamentForm.description} onChange={(e) => setTournamentForm({...tournamentForm, description: e.target.value})} className="bg-zinc-800/50 border-white/10" />
                       <Button onClick={createTournament} className="bg-yellow-400 hover:bg-yellow-300 text-black">Create Tournament</Button>
                     </div>
                   </DialogContent>
@@ -156,17 +192,82 @@ const AdminPanel = () => {
               </div>
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {tournaments.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between bg-zinc-800/50 p-3">
+                  <div key={t.id} className="flex items-center justify-between bg-zinc-800/50 p-3 rounded">
                     <div>
                       <p className="font-semibold">{t.title}</p>
                       <p className="text-xs text-zinc-500">{t.game_type} • {t.mode} • {t.team_type} • {t.current_participants}/{t.max_participants} {t.per_kill_reward > 0 && <span className="text-red-400">• 💀{t.per_kill_reward}/kill</span>}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Select value={t.status} onValueChange={(v) => updateTournamentStatus(t.id, v)}>
-                        <SelectTrigger className="w-32 bg-zinc-700 border-white/10 text-sm"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="w-28 bg-zinc-700 border-white/10 text-xs"><SelectValue /></SelectTrigger>
                         <SelectContent><SelectItem value="UPCOMING">Upcoming</SelectItem><SelectItem value="ONGOING">Ongoing</SelectItem><SelectItem value="COMPLETED">Completed</SelectItem></SelectContent>
                       </Select>
+                      <Button size="sm" variant="outline" onClick={() => cancelTournament(t.id)} className="text-orange-400 border-orange-400"><RefreshCw className="w-4 h-4" /></Button>
                       <Button size="sm" variant="destructive" onClick={() => deleteTournament(t.id)}><Trash2 className="w-4 h-4" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Users Tab */}
+          <TabsContent value="users">
+            <div className="bg-zinc-900/50 border border-white/10 p-6 rounded-lg">
+              <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+                <h2 className="font-bold">Manage Users ({users.length})</h2>
+                <div className="flex gap-2 flex-wrap">
+                  {/* Password Reset */}
+                  <Dialog>
+                    <DialogTrigger asChild><Button variant="outline" className="border-yellow-400 text-yellow-400"><Key className="w-4 h-4 mr-2" />Reset Password</Button></DialogTrigger>
+                    <DialogContent className="bg-zinc-900 border-white/10">
+                      <DialogHeader><DialogTitle>Generate Password Reset Code</DialogTitle></DialogHeader>
+                      <div className="space-y-4 mt-4">
+                        <Input placeholder="User Mobile Number" value={resetMobile} onChange={(e) => setResetMobile(e.target.value)} className="bg-zinc-800/50 border-white/10" />
+                        <Button onClick={generateResetCode} className="w-full bg-yellow-400 hover:bg-yellow-300 text-black">Generate Code</Button>
+                        {resetCode && (
+                          <div className="bg-green-500/20 border border-green-500 p-4 rounded text-center">
+                            <p className="text-sm text-zinc-400 mb-2">Share this code via WhatsApp:</p>
+                            <p className="text-2xl font-bold text-green-400 font-mono">{resetCode}</p>
+                          </div>
+                        )}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  {/* Give Amount */}
+                  <Dialog>
+                    <DialogTrigger asChild><Button className="bg-green-500 hover:bg-green-400 text-white"><DollarSign className="w-4 h-4 mr-2" />Give Amount</Button></DialogTrigger>
+                    <DialogContent className="bg-zinc-900 border-white/10">
+                      <DialogHeader><DialogTitle>Credit Amount to User</DialogTitle></DialogHeader>
+                      <div className="space-y-4 mt-4">
+                        <Select value={giveAmountData.user_id} onValueChange={(v) => setGiveAmountData({...giveAmountData, user_id: v})}>
+                          <SelectTrigger className="bg-zinc-800/50 border-white/10"><SelectValue placeholder="Select User" /></SelectTrigger>
+                          <SelectContent>
+                            {users.map(u => <SelectItem key={u.id} value={u.id}>{u.username} ({u.mobile})</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Input type="number" placeholder="Amount (DR)" value={giveAmountData.amount} onChange={(e) => setGiveAmountData({...giveAmountData, amount: parseInt(e.target.value) || 0})} className="bg-zinc-800/50 border-white/10" />
+                        <Input placeholder="Reason (optional)" value={giveAmountData.reason} onChange={(e) => setGiveAmountData({...giveAmountData, reason: e.target.value})} className="bg-zinc-800/50 border-white/10" />
+                        <Button onClick={giveAmount} className="w-full bg-green-500 hover:bg-green-400">Credit Amount</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {users.map((u) => (
+                  <div key={u.id} className={`flex items-center justify-between p-3 rounded ${u.is_blocked ? 'bg-red-900/30' : 'bg-zinc-800/50'}`}>
+                    <div>
+                      <p className="font-semibold">{u.username} {u.is_admin && <span className="text-yellow-400 text-xs">(ADMIN)</span>} {u.is_blocked && <span className="text-red-400 text-xs">(BLOCKED)</span>}</p>
+                      <p className="text-xs text-zinc-500">{u.mobile} • Balance: {u.wallet_balance} DR</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-400 font-bold">{u.wallet_balance} DR</span>
+                      {!u.is_admin && (
+                        <Button size="sm" variant={u.is_blocked ? "outline" : "destructive"} onClick={() => blockUser(u.id, !u.is_blocked)}>
+                          <Ban className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -176,12 +277,12 @@ const AdminPanel = () => {
 
           {/* Withdrawals Tab */}
           <TabsContent value="withdrawals">
-            <div className="bg-zinc-900/50 border border-white/10 p-6">
+            <div className="bg-zinc-900/50 border border-white/10 p-6 rounded-lg">
               <h2 className="font-bold mb-4">Pending Withdrawals</h2>
               {withdrawals.length > 0 ? (
                 <div className="space-y-2">
                   {withdrawals.map((w) => (
-                    <div key={w.id} className="flex items-center justify-between bg-zinc-800/50 p-3">
+                    <div key={w.id} className="flex items-center justify-between bg-zinc-800/50 p-3 rounded">
                       <div>
                         <p className="font-semibold">{w.amount} DR</p>
                         <p className="text-xs text-zinc-500">{w.account_holder_name} • {w.upi_id || `${w.bank_account} (${w.ifsc_code})`}</p>
@@ -199,7 +300,7 @@ const AdminPanel = () => {
 
           {/* News Tab */}
           <TabsContent value="news">
-            <div className="bg-zinc-900/50 border border-white/10 p-6">
+            <div className="bg-zinc-900/50 border border-white/10 p-6 rounded-lg">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-bold">News Ticker</h2>
                 <Dialog>
@@ -216,7 +317,7 @@ const AdminPanel = () => {
               </div>
               <div className="space-y-2">
                 {news.map((n) => (
-                  <div key={n.id} className="flex items-center justify-between bg-zinc-800/50 p-3">
+                  <div key={n.id} className="flex items-center justify-between bg-zinc-800/50 p-3 rounded">
                     <p>{n.title}</p>
                     <Button size="sm" variant="destructive" onClick={async () => { await api.delete(`/news/${n.id}`); fetchAll(); }}><Trash2 className="w-4 h-4" /></Button>
                   </div>
@@ -227,7 +328,7 @@ const AdminPanel = () => {
 
           {/* Giveaways Tab */}
           <TabsContent value="giveaways">
-            <div className="bg-zinc-900/50 border border-white/10 p-6">
+            <div className="bg-zinc-900/50 border border-white/10 p-6 rounded-lg">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-bold">Giveaways</h2>
                 <Dialog>
@@ -246,7 +347,7 @@ const AdminPanel = () => {
               </div>
               <div className="space-y-2">
                 {giveaways.map((g) => (
-                  <div key={g.id} className="flex items-center justify-between bg-zinc-800/50 p-3">
+                  <div key={g.id} className="flex items-center justify-between bg-zinc-800/50 p-3 rounded">
                     <div><p className="font-semibold">{g.title}</p><p className="text-xs text-zinc-500">{g.prize} • {g.participants?.length || 0} participants</p></div>
                     <Button size="sm" variant="destructive" onClick={async () => { await api.delete(`/giveaways/${g.id}`); fetchAll(); }}><Trash2 className="w-4 h-4" /></Button>
                   </div>
@@ -257,7 +358,7 @@ const AdminPanel = () => {
 
           {/* Lucky Draw Tab */}
           <TabsContent value="lucky">
-            <div className="bg-zinc-900/50 border border-white/10 p-6">
+            <div className="bg-zinc-900/50 border border-white/10 p-6 rounded-lg">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-bold">Lucky Draws</h2>
                 <Dialog>
@@ -281,7 +382,7 @@ const AdminPanel = () => {
               </div>
               <div className="space-y-2">
                 {luckyDraws.map((d) => (
-                  <div key={d.id} className="flex items-center justify-between bg-zinc-800/50 p-3">
+                  <div key={d.id} className="flex items-center justify-between bg-zinc-800/50 p-3 rounded">
                     <div><p className="font-semibold">{d.title}</p><p className="text-xs text-zinc-500">{d.entry_cost} DR entry • {d.prize_amount} DR prize • {d.current_entries}/{d.max_entries}</p></div>
                     <div className="flex gap-2">
                       {d.status === 'ACTIVE' && <Button size="sm" onClick={async () => { await api.post(`/lucky-draws/${d.id}/pick-winner`); fetchAll(); toast.success('Winner picked!'); }} className="bg-purple-500 hover:bg-purple-400">Pick Winner</Button>}
