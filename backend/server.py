@@ -971,16 +971,37 @@ async def startup_event():
             "referral_code": "ADMIN001",
             "backup_code": "ADMINBACK01",
             "is_admin": True,
+            "is_blocked": False,
             "game_uid": None,
             "game_name": None,
             "upi_id": None,
             "bank_account": None,
             "ifsc_code": None,
             "account_holder_name": None,
+            "reset_code": None,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(admin_user)
         logger.info("Default admin created: mobile=9999999999, password=admin123")
+    
+    # Create default app settings if not exists
+    settings = await db.settings.find_one({"id": "app_settings"})
+    if not settings:
+        default_settings = {
+            "id": "app_settings",
+            "app_name": "DHRIVO WON",
+            "app_description": "India's Premier Gaming Tournament Platform",
+            "whatsapp_number": "",
+            "telegram_link": "",
+            "instagram_link": "",
+            "support_email": "",
+            "disclaimer": "This is a skill-based gaming platform. Play responsibly.",
+            "terms": "Terms and conditions apply.",
+            "about": "DHRIVO WON - Win real money by playing tournaments!",
+            "upi_id": "",
+            "qr_code_url": ""
+        }
+        await db.settings.insert_one(default_settings)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
