@@ -181,10 +181,47 @@ class AdminBlockUser(BaseModel):
     is_blocked: bool
 
 class NotificationCreate(BaseModel):
-    user_id: Optional[str] = None  # None = all users
+    user_id: Optional[str] = None
     title: str
     message: str
-    notification_type: str = "GENERAL"  # GENERAL, MATCH_REMINDER, RESULT, ADMIN
+    notification_type: str = "GENERAL"
+
+# Store/Marketplace Models
+class ProductCreate(BaseModel):
+    title: str
+    description: str
+    price: int  # in DR coins
+    category: str  # PRODUCT, FF_ID, BGMI_ID
+    image_url: Optional[str] = None
+    game_id: Optional[str] = None  # For FF/BGMI IDs
+    game_password: Optional[str] = None
+
+class ProductBuy(BaseModel):
+    product_id: str
+
+class UserProductList(BaseModel):
+    title: str
+    description: str
+    price: int
+    category: str
+    image_url: Optional[str] = None
+    game_id: Optional[str] = None
+    game_password: Optional[str] = None
+
+class SupportTicket(BaseModel):
+    subject: str
+    message: str
+
+class AppSettings(BaseModel):
+    whatsapp_number: Optional[str] = None
+    telegram_link: Optional[str] = None
+    instagram_link: Optional[str] = None
+    support_email: Optional[str] = None
+    app_name: Optional[str] = None
+    app_description: Optional[str] = None
+    disclaimer: Optional[str] = None
+    terms: Optional[str] = None
+    about: Optional[str] = None
 
 # ================== HELPERS ==================
 
