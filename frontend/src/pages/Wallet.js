@@ -10,106 +10,70 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { toast } from 'sonner';
 import { 
   Wallet, Plus, ArrowDownToLine, ArrowUpFromLine, 
-  Clock, CheckCircle, XCircle, Loader2, CreditCard
+  Clock, CheckCircle, XCircle, Loader2, QrCode, Smartphone, Copy
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_RugX0n4GoBXMdm';
+const rechargeOptions = [15, 30, 50, 100, 150, 200, 300, 500];
+const withdrawOptions = [30, 50, 100, 150, 200, 300, 500];
 
 const WalletPage = () => {
   const { user, refreshUser } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [rechargeAmount, setRechargeAmount] = useState('');
+  const [settings, setSettings] = useState(null);
+  const [depositAmount, setDepositAmount] = useState('');
+  const [userUpiId, setUserUpiId] = useState('');
   const [withdrawData, setWithdrawData] = useState({ amount: '', upi_id: '', bank_account: '', ifsc_code: '', account_holder_name: '' });
   const [processing, setProcessing] = useState(false);
-  const [rechargeDialogOpen, setRechargeDialogOpen] = useState(false);
+  const [depositDialogOpen, setDepositDialogOpen] = useState(false);
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
-
-  const rechargeOptions = [15, 30, 40, 50, 100, 150, 200, 300, 500];
-  const withdrawOptions = [30, 50, 80, 100, 150, 200];
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
-    fetchTransactions();
+    fetchData();
   }, []);
 
-  const fetchTransactions = async () => {
+  const fetchData = async () => {
     try {
-      const response = await api.get('/wallet/transactions');
-      setTransactions(response.data);
+      const [txRes, settingsRes] = await Promise.all([
+        api.get('/wallet/transactions'),
+        api.get('/settings')
+      ]);
+      setTransactions(txRes.data);
+      setSettings(settingsRes.data);
     } catch (error) {
-      console.error('Failed to fetch transactions');
+      console.error('Failed to fetch data');
     } finally {
       setLoading(false);
     }
   };
 
-  const loadRazorpay = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
-  const handleRecharge = async () => {
-    const amount = parseInt(rechargeAmount);
+  const handleDeposit = async () => {
+    const amount = parseInt(depositAmount);
     if (!amount || amount < 15) {
-      toast.error('Minimum recharge amount is 15 DR');
+      toast.error('Minimum deposit is 15 DR');
+      return;
+    }
+    if (!userUpiId && !showQR) {
+      toast.error('Please enter your UPI ID');
       return;
     }
 
     setProcessing(true);
     try {
-      // Load Razorpay
-      const loaded = await loadRazorpay();
-      if (!loaded) {
-        toast.error('Failed to load payment gateway');
-        return;
-      }
-
-      // Create order
-      const orderResponse = await api.post('/wallet/create-order', { amount });
-      const { order_id, amount: orderAmount, currency } = orderResponse.data;
-
-      // Open Razorpay
-      const options = {
-        key: RAZORPAY_KEY,
-        amount: orderAmount,
-        currency,
-        order_id,
-        name: 'DHRIVO WON',
-        description: `Recharge ${amount} DR`,
-        handler: async (response) => {
-          try {
-            await api.post('/wallet/verify-payment', {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            });
-            toast.success(`Successfully recharged ${amount} DR!`);
-            await refreshUser();
-            fetchTransactions();
-            setRechargeDialogOpen(false);
-            setRechargeAmount('');
-          } catch (error) {
-            toast.error('Payment verification failed');
-          }
-        },
-        prefill: {
-          contact: user?.mobile
-        },
-        theme: {
-          color: '#FACC15'
-        }
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
+      await api.post('/wallet/deposit-request', {
+        amount,
+        user_upi_id: userUpiId,
+        payment_method: showQR ? 'QR' : 'UPI'
+      });
+      toast.success('Deposit request submitted! Admin will send payment request to your UPI.');
+      setDepositDialogOpen(false);
+      setDepositAmount('');
+      setUserUpiId('');
+      fetchData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to process recharge');
+      toast.error(error.response?.data?.detail || 'Failed to submit request');
     } finally {
       setProcessing(false);
     }
@@ -118,20 +82,17 @@ const WalletPage = () => {
   const handleWithdraw = async () => {
     const amount = parseInt(withdrawData.amount);
     if (!amount || amount < 30) {
-      toast.error('Minimum withdrawal amount is 30 DR');
+      toast.error('Minimum withdrawal is 30 DR');
       return;
     }
-
-    if (!withdrawData.upi_id && !(withdrawData.bank_account && withdrawData.ifsc_code)) {
-      toast.error('Please provide UPI ID or Bank details');
-      return;
-    }
-
     if (!withdrawData.account_holder_name) {
       toast.error('Account holder name is required');
       return;
     }
-
+    if (!withdrawData.upi_id && !(withdrawData.bank_account && withdrawData.ifsc_code)) {
+      toast.error('Please provide UPI ID or Bank details');
+      return;
+    }
     if (amount > user?.wallet_balance) {
       toast.error('Insufficient balance');
       return;
@@ -146,15 +107,22 @@ const WalletPage = () => {
         ifsc_code: withdrawData.ifsc_code || undefined,
         account_holder_name: withdrawData.account_holder_name
       });
-      toast.success('Withdrawal request submitted! Processing in 5-10 minutes.');
+      toast.success('Withdrawal request submitted!');
       await refreshUser();
-      fetchTransactions();
+      fetchData();
       setWithdrawDialogOpen(false);
       setWithdrawData({ amount: '', upi_id: '', bank_account: '', ifsc_code: '', account_holder_name: '' });
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Withdrawal failed');
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const copyUPI = () => {
+    if (settings?.admin_upi_id) {
+      navigator.clipboard.writeText(settings.admin_upi_id);
+      toast.success('UPI ID copied!');
     }
   };
 
@@ -168,85 +136,125 @@ const WalletPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090B] pb-20 md:pb-8">
+    <div className="min-h-screen bg-[#0a1628] pb-24">
       <Navbar />
       
-      <main className="max-w-4xl mx-auto px-4 py-6 pt-20">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold font-['Chakra_Petch']">
-            <Wallet className="inline-block w-8 h-8 text-yellow-400 mr-2" />
-            MY <span className="text-yellow-400">WALLET</span>
-          </h1>
-        </div>
-
+      <main className="max-w-lg mx-auto px-4 py-6 pt-20">
         {/* Balance Card */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-yellow-400/20 to-zinc-900 border border-yellow-400/30 p-6 sm:p-8 mb-6"
+          className="bg-gradient-to-br from-yellow-500/20 to-orange-500/10 border border-yellow-500/30 rounded-2xl p-6 mb-6"
         >
-          <p className="text-zinc-400 mb-2">Available Balance</p>
+          <p className="text-zinc-400 text-sm mb-1">Available Balance</p>
           <div className="flex items-baseline gap-2 mb-6">
-            <span className="text-5xl sm:text-6xl font-bold text-yellow-400 font-['Chakra_Petch']">
-              {user?.wallet_balance || 0}
-            </span>
-            <span className="text-xl text-zinc-400">DR</span>
+            <span className="text-4xl font-bold text-yellow-400">{user?.wallet_balance || 0}</span>
+            <span className="text-lg text-zinc-400">DR</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* Recharge Dialog */}
-            <Dialog open={rechargeDialogOpen} onOpenChange={setRechargeDialogOpen}>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Deposit Dialog */}
+            <Dialog open={depositDialogOpen} onOpenChange={setDepositDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="flex-1 turbo-btn bg-yellow-400 hover:bg-yellow-300 text-black font-bold" data-testid="recharge-btn">
-                  <span className="flex items-center gap-2">
-                    <Plus className="w-5 h-5" />
-                    RECHARGE
-                  </span>
+                <Button className="bg-green-500 hover:bg-green-400 text-white font-bold py-5 rounded-xl">
+                  <Plus className="w-5 h-5 mr-2" />
+                  ADD MONEY
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-zinc-900 border-white/10 max-w-md">
+              <DialogContent className="bg-[#0a1628] border-zinc-700 max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle className="font-['Chakra_Petch'] flex items-center gap-2">
-                    <ArrowDownToLine className="w-5 h-5 text-green-400" />
-                    RECHARGE WALLET
-                  </DialogTitle>
+                  <DialogTitle className="text-yellow-400">Add Money to Wallet</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
-                  <div className="grid grid-cols-3 gap-3">
-                    {rechargeOptions.map((amt) => (
-                      <button
-                        key={amt}
-                        onClick={() => setRechargeAmount(amt.toString())}
-                        className={`p-4 border text-center font-bold transition-all transform hover:scale-105
-                          ${rechargeAmount === amt.toString() 
-                            ? 'bg-yellow-400 border-yellow-400 text-black scale-105' 
-                            : 'bg-zinc-800/50 border-white/10 hover:border-yellow-400/50'}`}
-                      >
-                        <span className="text-xl">{amt}</span>
-                        <span className="block text-xs opacity-70">DR</span>
-                      </button>
-                    ))}
+                  {/* Amount Selection */}
+                  <div>
+                    <Label className="text-sm text-zinc-400">Select Amount (DR)</Label>
+                    <div className="grid grid-cols-4 gap-2 mt-2">
+                      {rechargeOptions.map((amt) => (
+                        <button
+                          key={amt}
+                          onClick={() => setDepositAmount(amt.toString())}
+                          className={`p-3 rounded-lg font-bold transition-all ${
+                            depositAmount === amt.toString() 
+                              ? 'bg-yellow-400 text-black' 
+                              : 'bg-zinc-800 hover:bg-zinc-700'
+                          }`}
+                        >
+                          {amt}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="bg-zinc-800/50 p-3 text-sm">
-                    <p className="text-zinc-400">Amount to Pay: ₹{rechargeAmount || 0}</p>
-                    <p className="text-yellow-400">DR Coins: {rechargeAmount || 0}</p>
+
+                  {/* Payment Method Tabs */}
+                  <Tabs defaultValue="upi" onValueChange={(v) => setShowQR(v === 'qr')}>
+                    <TabsList className="w-full bg-zinc-800">
+                      <TabsTrigger value="upi" className="flex-1 data-[state=active]:bg-yellow-400 data-[state=active]:text-black">
+                        <Smartphone className="w-4 h-4 mr-2" />
+                        UPI
+                      </TabsTrigger>
+                      <TabsTrigger value="qr" className="flex-1 data-[state=active]:bg-yellow-400 data-[state=active]:text-black">
+                        <QrCode className="w-4 h-4 mr-2" />
+                        QR Code
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="upi" className="mt-4 space-y-4">
+                      <div>
+                        <Label>Your UPI ID</Label>
+                        <Input
+                          placeholder="yourname@paytm / yourname@upi"
+                          value={userUpiId}
+                          onChange={(e) => setUserUpiId(e.target.value)}
+                          className="bg-zinc-800 border-zinc-700 mt-1"
+                        />
+                        <p className="text-xs text-zinc-500 mt-1">Admin will send payment request to this UPI</p>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="qr" className="mt-4 space-y-4">
+                      {settings?.qr_code_url ? (
+                        <div className="text-center">
+                          <img src={settings.qr_code_url} alt="Payment QR" className="w-48 h-48 mx-auto bg-white p-2 rounded-lg" />
+                          <p className="text-sm text-zinc-400 mt-2">Scan & Pay ₹{depositAmount || '0'}</p>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-zinc-500">
+                          <QrCode className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                          <p>QR Code not available</p>
+                        </div>
+                      )}
+                      
+                      {settings?.admin_upi_id && (
+                        <div className="bg-zinc-800 p-3 rounded-lg">
+                          <p className="text-xs text-zinc-400 mb-1">Or pay to UPI ID:</p>
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-yellow-400">{settings.admin_upi_id}</span>
+                            <button onClick={copyUPI} className="text-zinc-400 hover:text-white">
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+
+                  <div className="bg-zinc-800/50 p-3 rounded-lg text-sm">
+                    <p className="text-zinc-400">Amount: <span className="text-white font-bold">₹{depositAmount || 0}</span></p>
+                    <p className="text-zinc-400">You'll get: <span className="text-yellow-400 font-bold">{depositAmount || 0} DR</span></p>
                   </div>
+
                   <Button
-                    onClick={handleRecharge}
-                    disabled={processing || !rechargeAmount}
-                    className="w-full bg-green-500 hover:bg-green-400 text-white font-bold"
-                    data-testid="confirm-recharge-btn"
+                    onClick={handleDeposit}
+                    disabled={processing || !depositAmount}
+                    className="w-full bg-green-500 hover:bg-green-400 text-white font-bold py-5 rounded-xl"
                   >
-                    {processing ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        <CreditCard className="w-5 h-5" />
-                        PAY ₹{rechargeAmount || 0}
-                      </span>
-                    )}
+                    {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'SUBMIT REQUEST'}
                   </Button>
+
+                  <p className="text-xs text-zinc-500 text-center">
+                    After submitting, admin will send payment request. Once paid, coins will be credited.
+                  </p>
                 </div>
               </DialogContent>
             </Dialog>
@@ -254,114 +262,91 @@ const WalletPage = () => {
             {/* Withdraw Dialog */}
             <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="flex-1 turbo-btn border-white/20 hover:border-yellow-400" data-testid="withdraw-btn">
-                  <span className="flex items-center gap-2">
-                    <ArrowUpFromLine className="w-5 h-5" />
-                    WITHDRAW
-                  </span>
+                <Button variant="outline" className="border-zinc-600 hover:bg-zinc-800 font-bold py-5 rounded-xl">
+                  <ArrowUpFromLine className="w-5 h-5 mr-2" />
+                  WITHDRAW
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-zinc-900 border-white/10 max-w-md">
+              <DialogContent className="bg-[#0a1628] border-zinc-700 max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle className="font-['Chakra_Petch'] flex items-center gap-2">
-                    <ArrowUpFromLine className="w-5 h-5 text-red-400" />
-                    WITHDRAW FUNDS
-                  </DialogTitle>
+                  <DialogTitle className="text-yellow-400">Withdraw Money</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    {withdrawOptions.map((amt) => (
-                      <button
-                        key={amt}
-                        onClick={() => setWithdrawData({ ...withdrawData, amount: amt.toString() })}
-                        className={`p-3 border text-center font-bold transition-colors
-                          ${withdrawData.amount === amt.toString() 
-                            ? 'bg-yellow-400 border-yellow-400 text-black' 
-                            : 'bg-zinc-800/50 border-white/10 hover:border-yellow-400/50'}`}
-                      >
-                        {amt} DR
-                      </button>
-                    ))}
+                  {/* Amount Selection */}
+                  <div>
+                    <Label className="text-sm text-zinc-400">Select Amount (DR)</Label>
+                    <div className="grid grid-cols-4 gap-2 mt-2">
+                      {withdrawOptions.map((amt) => (
+                        <button
+                          key={amt}
+                          onClick={() => setWithdrawData({ ...withdrawData, amount: amt.toString() })}
+                          className={`p-3 rounded-lg font-bold transition-all ${
+                            withdrawData.amount === amt.toString() 
+                              ? 'bg-yellow-400 text-black' 
+                              : 'bg-zinc-800 hover:bg-zinc-700'
+                          }`}
+                        >
+                          {amt}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Custom Amount</Label>
+
+                  <div>
+                    <Label>Account Holder Name *</Label>
                     <Input
-                      type="number"
-                      placeholder="Enter amount (min 30)"
-                      value={withdrawData.amount}
-                      onChange={(e) => setWithdrawData({ ...withdrawData, amount: e.target.value })}
-                      className="bg-zinc-800/50 border-white/10"
-                      data-testid="withdraw-amount-input"
+                      placeholder="Name as per bank/UPI"
+                      value={withdrawData.account_holder_name}
+                      onChange={(e) => setWithdrawData({ ...withdrawData, account_holder_name: e.target.value })}
+                      className="bg-zinc-800 border-zinc-700 mt-1"
                     />
                   </div>
-                  
+
                   <Tabs defaultValue="upi">
-                    <TabsList className="bg-zinc-800 w-full">
+                    <TabsList className="w-full bg-zinc-800">
                       <TabsTrigger value="upi" className="flex-1">UPI</TabsTrigger>
                       <TabsTrigger value="bank" className="flex-1">Bank</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="upi" className="space-y-4 mt-4">
-                      <div className="space-y-2">
-                        <Label>Account Holder Name *</Label>
-                        <Input
-                          placeholder="Enter name as per UPI"
-                          value={withdrawData.account_holder_name}
-                          onChange={(e) => setWithdrawData({ ...withdrawData, account_holder_name: e.target.value })}
-                          className="bg-zinc-800/50 border-white/10"
-                          data-testid="holder-name-input"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>UPI ID *</Label>
-                        <Input
-                          placeholder="yourname@upi"
-                          value={withdrawData.upi_id}
-                          onChange={(e) => setWithdrawData({ ...withdrawData, upi_id: e.target.value })}
-                          className="bg-zinc-800/50 border-white/10"
-                          data-testid="upi-id-input"
-                        />
-                      </div>
+                    <TabsContent value="upi" className="mt-4">
+                      <Label>UPI ID *</Label>
+                      <Input
+                        placeholder="yourname@upi"
+                        value={withdrawData.upi_id}
+                        onChange={(e) => setWithdrawData({ ...withdrawData, upi_id: e.target.value })}
+                        className="bg-zinc-800 border-zinc-700 mt-1"
+                      />
                     </TabsContent>
-                    <TabsContent value="bank" className="space-y-4 mt-4">
-                      <div className="space-y-2">
-                        <Label>Account Holder Name *</Label>
-                        <Input
-                          placeholder="Enter name as per bank"
-                          value={withdrawData.account_holder_name}
-                          onChange={(e) => setWithdrawData({ ...withdrawData, account_holder_name: e.target.value })}
-                          className="bg-zinc-800/50 border-white/10"
-                        />
-                      </div>
-                      <div className="space-y-2">
+                    <TabsContent value="bank" className="mt-4 space-y-3">
+                      <div>
                         <Label>Account Number *</Label>
                         <Input
-                          placeholder="Enter account number"
+                          placeholder="Account number"
                           value={withdrawData.bank_account}
                           onChange={(e) => setWithdrawData({ ...withdrawData, bank_account: e.target.value })}
-                          className="bg-zinc-800/50 border-white/10"
+                          className="bg-zinc-800 border-zinc-700 mt-1"
                         />
                       </div>
-                      <div className="space-y-2">
+                      <div>
                         <Label>IFSC Code *</Label>
                         <Input
-                          placeholder="Enter IFSC code"
+                          placeholder="IFSC code"
                           value={withdrawData.ifsc_code}
                           onChange={(e) => setWithdrawData({ ...withdrawData, ifsc_code: e.target.value })}
-                          className="bg-zinc-800/50 border-white/10"
+                          className="bg-zinc-800 border-zinc-700 mt-1"
                         />
                       </div>
                     </TabsContent>
                   </Tabs>
 
-                  <div className="bg-zinc-800/50 p-3 text-sm">
-                    <p className="text-zinc-400">Your Balance: {user?.wallet_balance} DR</p>
-                    <p className="text-yellow-400">Processing Time: 5-10 minutes</p>
+                  <div className="bg-zinc-800/50 p-3 rounded-lg text-sm">
+                    <p className="text-zinc-400">Your Balance: <span className="text-yellow-400 font-bold">{user?.wallet_balance} DR</span></p>
+                    <p className="text-zinc-400">Withdraw: <span className="text-white font-bold">{withdrawData.amount || 0} DR</span></p>
                   </div>
+
                   <Button
                     onClick={handleWithdraw}
                     disabled={processing || !withdrawData.amount}
-                    className="w-full bg-red-500 hover:bg-red-400 text-white font-bold"
-                    data-testid="confirm-withdraw-btn"
+                    className="w-full bg-red-500 hover:bg-red-400 text-white font-bold py-5 rounded-xl"
                   >
                     {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'WITHDRAW'}
                   </Button>
@@ -372,29 +357,33 @@ const WalletPage = () => {
         </motion.div>
 
         {/* Transaction History */}
-        <div className="bg-zinc-900/50 border border-white/10 p-6">
-          <h2 className="text-lg font-bold font-['Chakra_Petch'] mb-4">TRANSACTION HISTORY</h2>
+        <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+          <h2 className="font-bold mb-4 flex items-center gap-2">
+            <Wallet className="w-5 h-5 text-yellow-400" />
+            Transaction History
+          </h2>
           
           {loading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="w-8 h-8 text-yellow-400 animate-spin" />
+              <Loader2 className="w-6 h-6 text-yellow-400 animate-spin" />
             </div>
           ) : transactions.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {transactions.map((tx) => (
-                <div 
-                  key={tx.id}
-                  className="flex items-center justify-between bg-zinc-800/50 p-4"
-                >
+                <div key={tx.id} className="flex items-center justify-between bg-zinc-800/50 p-3 rounded-lg">
                   <div className="flex items-center gap-3">
-                    {tx.type === 'DEPOSIT' ? (
+                    {tx.type === 'DEPOSIT' || tx.type === 'DEPOSIT_REQUEST' ? (
                       <ArrowDownToLine className="w-5 h-5 text-green-400" />
+                    ) : tx.type === 'ADMIN_CREDIT' ? (
+                      <Plus className="w-5 h-5 text-green-400" />
                     ) : (
                       <ArrowUpFromLine className="w-5 h-5 text-red-400" />
                     )}
                     <div>
-                      <p className="font-semibold">
-                        {tx.type === 'DEPOSIT' ? 'Recharge' : 'Withdrawal'}
+                      <p className="font-medium text-sm">
+                        {tx.type === 'DEPOSIT_REQUEST' ? 'Deposit Request' : 
+                         tx.type === 'ADMIN_CREDIT' ? 'Admin Credit' :
+                         tx.type === 'DEPOSIT' ? 'Deposit' : 'Withdrawal'}
                       </p>
                       <p className="text-xs text-zinc-500">
                         {new Date(tx.created_at).toLocaleDateString()}
@@ -402,10 +391,10 @@ const WalletPage = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`font-bold ${tx.type === 'DEPOSIT' ? 'text-green-400' : 'text-red-400'}`}>
-                      {tx.type === 'DEPOSIT' ? '+' : '-'}{tx.amount} DR
+                    <p className={`font-bold ${tx.type.includes('DEPOSIT') || tx.type === 'ADMIN_CREDIT' ? 'text-green-400' : 'text-red-400'}`}>
+                      {tx.type.includes('DEPOSIT') || tx.type === 'ADMIN_CREDIT' ? '+' : '-'}{tx.amount} DR
                     </p>
-                    <div className="flex items-center gap-1 text-xs">
+                    <div className="flex items-center gap-1 text-xs justify-end">
                       {getStatusIcon(tx.status)}
                       <span className="text-zinc-400">{tx.status}</span>
                     </div>
