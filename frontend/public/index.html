@@ -62,11 +62,19 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+        <script>
+            // Hide Emergent badge
+            document.addEventListener('DOMContentLoaded', function() {
+                var badge = document.getElementById('emergent-badge');
+                if (badge) badge.style.display = 'none';
+            });
+        </script>
         <a
             id="emergent-badge"
             target="_blank"
             href="https://app.emergent.sh/?utm_source=emergent-badge"
-            style="
+            style="display: none !important;"
+        >
                 display: flex !important;
                 align-items: center !important;
                 position: fixed !important;
