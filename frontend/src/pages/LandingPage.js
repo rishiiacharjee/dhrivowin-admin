@@ -1,37 +1,40 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Smartphone, CheckCircle, ArrowRight } from 'lucide-react';
+import { Download, Smartphone, CheckCircle, Chrome, Share, PlusSquare } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import api from '../lib/api';
 
 const LandingPage = () => {
   const [stats, setStats] = useState({ total_players: 0, total_tournaments: 0 });
-  const [canInstall, setCanInstall] = useState(false);
-  const [installed, setInstalled] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
 
   useEffect(() => {
     fetchStats();
     
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setInstalled(true);
+    // Check if already installed as PWA
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      setIsInstalled(true);
+      window.location.href = '/login';
     }
 
     // Listen for install prompt
-    const handler = (e) => {
+    const handleBeforeInstall = (e) => {
       e.preventDefault();
-      window.deferredPrompt = e;
-      setCanInstall(true);
+      setDeferredPrompt(e);
     };
-    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
     // Listen for successful install
     window.addEventListener('appinstalled', () => {
-      setInstalled(true);
-      setCanInstall(false);
+      setIsInstalled(true);
+      setDeferredPrompt(null);
     });
 
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    };
   }, []);
 
   const fetchStats = async () => {
@@ -41,138 +44,168 @@ const LandingPage = () => {
     } catch (error) {}
   };
 
-  const handleInstall = async () => {
-    const prompt = window.deferredPrompt;
-    if (prompt) {
-      prompt.prompt();
-      const result = await prompt.userChoice;
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      // Chrome install prompt available
+      deferredPrompt.prompt();
+      const result = await deferredPrompt.userChoice;
       if (result.outcome === 'accepted') {
-        setInstalled(true);
+        setIsInstalled(true);
       }
-      window.deferredPrompt = null;
-      setCanInstall(false);
+      setDeferredPrompt(null);
+    } else {
+      // Show manual instructions
+      setShowInstructions(true);
     }
   };
 
-  // If installed, redirect to dashboard
-  if (installed) {
-    window.location.href = '/login';
-    return null;
-  }
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
 
   return (
     <div className="min-h-screen bg-[#0a1628] flex flex-col">
-      {/* Splash Header */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center p-4">
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-md"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-sm w-full"
         >
           {/* Logo */}
           <motion.img 
             src="/logo.png" 
             alt="DHRIVO WON" 
-            className="w-36 h-36 mx-auto mb-6 object-contain"
-            initial={{ rotate: -10 }}
-            animate={{ rotate: 0 }}
-            transition={{ duration: 0.5 }}
+            className="w-28 h-28 mx-auto mb-4 object-contain"
+            initial={{ scale: 0.5 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", duration: 0.5 }}
           />
 
-          <h1 className="text-4xl font-bold font-['Chakra_Petch'] mb-2">
+          <h1 className="text-3xl font-bold font-['Chakra_Petch'] mb-1">
             DHRIVO <span className="text-yellow-400">WON</span>
-            <span className="text-yellow-400 text-lg">©</span>
+            <span className="text-yellow-400 text-sm">©</span>
           </h1>
           
-          <p className="text-zinc-400 mb-8">
+          <p className="text-zinc-400 text-sm mb-6">
             India's #1 Gaming Tournament Platform
           </p>
 
           {/* Stats */}
-          <div className="flex justify-center gap-8 mb-8">
+          <div className="flex justify-center gap-8 mb-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-yellow-400">{stats.total_players || 0}+</p>
+              <p className="text-xl font-bold text-yellow-400">{stats.total_players || 0}+</p>
               <p className="text-xs text-zinc-500">Players</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-400">{stats.total_tournaments || 0}+</p>
+              <p className="text-xl font-bold text-green-400">{stats.total_tournaments || 0}+</p>
               <p className="text-xs text-zinc-500">Tournaments</p>
             </div>
           </div>
 
-          {/* Download Section */}
-          <div className="bg-zinc-900/50 border border-yellow-500/30 rounded-2xl p-6">
-            <Smartphone className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+          {/* Install Card */}
+          <div className="bg-gradient-to-b from-zinc-800/50 to-zinc-900/50 border border-yellow-500/20 rounded-2xl p-5 mb-4">
+            <div className="w-14 h-14 bg-yellow-400/10 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Smartphone className="w-7 h-7 text-yellow-400" />
+            </div>
             
-            {canInstall ? (
-              <>
-                <h2 className="font-bold text-lg mb-3">Ready to Install!</h2>
-                <Button 
-                  onClick={handleInstall}
-                  className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-6 text-lg rounded-xl"
-                >
-                  <Download className="w-6 h-6 mr-2" />
-                  INSTALL APP
-                </Button>
-              </>
-            ) : (
-              <>
-                <h2 className="font-bold text-lg mb-3">Download App</h2>
-                <p className="text-sm text-zinc-400 mb-4">
-                  Install from browser menu to play tournaments
-                </p>
-                
-                <div className="bg-zinc-800/50 rounded-xl p-4 text-left space-y-3 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-yellow-400 text-black rounded-full flex items-center justify-center font-bold text-sm">1</div>
-                    <p className="text-sm">Tap browser menu <span className="bg-zinc-700 px-2 py-0.5 rounded">⋮</span></p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-yellow-400 text-black rounded-full flex items-center justify-center font-bold text-sm">2</div>
-                    <p className="text-sm">Select <span className="text-yellow-400">"Install App"</span> or <span className="text-yellow-400">"Add to Home"</span></p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-yellow-400 text-black rounded-full flex items-center justify-center font-bold text-sm">3</div>
-                    <p className="text-sm">Open from home screen</p>
-                  </div>
-                </div>
+            <h2 className="font-bold text-lg mb-2">Install App to Play</h2>
+            <p className="text-xs text-zinc-400 mb-4">
+              Download our app for the best gaming experience
+            </p>
 
-                <Button 
-                  onClick={() => alert('Tap the browser menu (⋮) and select "Install App" or "Add to Home Screen"')}
-                  className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-5 rounded-xl"
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  HOW TO DOWNLOAD
-                </Button>
-              </>
+            {deferredPrompt ? (
+              <Button 
+                onClick={handleInstallClick}
+                className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-5 rounded-xl text-base"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                INSTALL NOW
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => setShowInstructions(!showInstructions)}
+                className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-5 rounded-xl text-base"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                DOWNLOAD APP
+              </Button>
             )}
           </div>
 
+          {/* Instructions Panel */}
+          {showInstructions && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 mb-4 text-left"
+            >
+              <h3 className="font-bold text-sm mb-3 text-yellow-400">How to Install:</h3>
+              
+              {isIOS ? (
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">1</div>
+                    <p className="text-sm text-zinc-300">Tap the <Share className="w-4 h-4 inline text-blue-400" /> Share button</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">2</div>
+                    <p className="text-sm text-zinc-300">Scroll and tap <span className="text-yellow-400">"Add to Home Screen"</span></p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">3</div>
+                    <p className="text-sm text-zinc-300">Tap <span className="text-yellow-400">"Add"</span> to install</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-yellow-400 text-black rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">1</div>
+                    <p className="text-sm text-zinc-300">Tap <span className="bg-zinc-700 px-1.5 py-0.5 rounded text-white">⋮</span> menu (top right)</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-yellow-400 text-black rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">2</div>
+                    <p className="text-sm text-zinc-300">Tap <span className="text-yellow-400">"Install app"</span> or <span className="text-yellow-400">"Add to Home screen"</span></p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-yellow-400 text-black rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">3</div>
+                    <p className="text-sm text-zinc-300">Tap <span className="text-yellow-400">"Install"</span> to confirm</p>
+                  </div>
+                </div>
+              )}
+              
+              <button 
+                onClick={() => setShowInstructions(false)}
+                className="w-full mt-4 text-sm text-zinc-500 hover:text-white"
+              >
+                Close
+              </button>
+            </motion.div>
+          )}
+
           {/* Features */}
-          <div className="mt-6 grid grid-cols-2 gap-3 text-xs">
-            <div className="bg-zinc-800/30 p-3 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-400 mx-auto mb-1" />
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="bg-zinc-800/30 p-3 rounded-lg flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
               <p className="text-zinc-400">Real Money</p>
             </div>
-            <div className="bg-zinc-800/30 p-3 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-400 mx-auto mb-1" />
+            <div className="bg-zinc-800/30 p-3 rounded-lg flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
               <p className="text-zinc-400">Instant Payout</p>
             </div>
-            <div className="bg-zinc-800/30 p-3 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-400 mx-auto mb-1" />
+            <div className="bg-zinc-800/30 p-3 rounded-lg flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
               <p className="text-zinc-400">Free Fire & BGMI</p>
             </div>
-            <div className="bg-zinc-800/30 p-3 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-400 mx-auto mb-1" />
-              <p className="text-zinc-400">Daily Tournaments</p>
+            <div className="bg-zinc-800/30 p-3 rounded-lg flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+              <p className="text-zinc-400">24/7 Support</p>
             </div>
           </div>
         </motion.div>
       </div>
 
       {/* Footer */}
-      <div className="p-4 text-center text-xs text-zinc-600">
+      <div className="p-3 text-center text-xs text-zinc-600">
         <p>© 2024 DHRIVO WON. All rights reserved.</p>
       </div>
     </div>
