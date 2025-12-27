@@ -38,7 +38,8 @@ const LandingPage = () => {
         setDeferredPrompt(null);
       }
     } else {
-      alert('Browser menu (⋮) se "Add to Home Screen" ya "Install App" select karein!');
+      // Show instructions modal instead of alert
+      setShowInstructions(true);
     }
   };
 
