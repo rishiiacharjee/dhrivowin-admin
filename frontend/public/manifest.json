@@ -1,32 +1,21 @@
 {
   "short_name": "DHRIVO WON",
-  "name": "DHRIVO WON© - Gaming Tournaments",
-  "description": "India's Premier Gaming Tournament Platform. Compete in Free Fire & BGMI tournaments. Win Real Money!",
+  "name": "DHRIVO WON - Gaming Tournaments",
+  "description": "India's Premier Gaming Tournament Platform. Win Real Money!",
   "icons": [
     {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "logo512.png",
+      "src": "logo.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
     }
   ],
-  "start_url": "/",
+  "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
   "theme_color": "#FACC15",
-  "background_color": "#09090B",
-  "orientation": "portrait",
+  "background_color": "#0a1628",
+  "orientation": "portrait-primary",
   "categories": ["games", "entertainment"],
-  "screenshots": [
-    {
-      "src": "screenshot1.png",
-      "sizes": "1280x720",
-      "type": "image/png"
-    }
-  ]
+  "prefer_related_applications": false
 }
